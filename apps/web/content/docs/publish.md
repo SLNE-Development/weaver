@@ -25,15 +25,15 @@ Only maintainers and admins can create keys with write access. See [API keys and
 The plugin reads the server URL and the key from two environment variables. Locally, export them in your shell. In CI, add them as secrets.
 
 ```sh
-export PROTOLOOM_URL={{url}}
-export PROTOLOOM_TOKEN=<your API key>
+export WEAVER_URL={{url}}
+export WEAVER_TOKEN=<your API key>
 ```
 
 Keep the key out of `build.gradle.kts` and `gradle.properties` files that are committed.
 
 ## 3. Apply the plugin
 
-The plugin `dev.protoloom` is published to the SLNE Maven repository. Add it to the plugin repositories in `settings.gradle.kts`:
+The plugin `dev.slne.weaver` is published to the SLNE Maven repository. Add it to the plugin repositories in `settings.gradle.kts`:
 
 ```kotlin title="settings.gradle.kts"
 pluginManagement {
@@ -48,12 +48,12 @@ Then apply and configure it:
 
 ```kotlin title="build.gradle.kts"
 plugins {
-    id("dev.protoloom") version "0.1.0"
+    id("dev.slne.weaver") version "0.1.0"
 }
 
 version = "1.0.0"
 
-protoloom {
+weaver {
     repositories("releases")
     publishing {
         repository = "releases"
@@ -65,7 +65,7 @@ protoloom {
 
 dependencies {
     // every artifact your protos import from
-    protoloom("dev.surf.economy:economy-contracts:1.4.0")
+    weaver("dev.surf.economy:economy-contracts:1.4.0")
 }
 ```
 
@@ -83,7 +83,7 @@ On success Gradle prints a line like this:
 Published dev.surf.protection:protection-contracts:1.0.0 to releases, build 1
 ```
 
-Protoloom compiles your files together with their dependencies before it accepts them. If a file doesn't compile, or imports a file from an artifact you didn't declare, the publish fails and names the file and the problem. See [Validation on publish](/docs/validation).
+Weaver compiles your files together with their dependencies before it accepts them. If a file doesn't compile, or imports a file from an artifact you didn't declare, the publish fails and names the file and the problem. See [Validation on publish](/docs/validation).
 
 > [!WARNING]
 > **Releases are permanent.** Once `1.0.0` is published it can't be overwritten, unless the repository allows redeploy. While you're iterating, use a version like `1.0.0-SNAPSHOT`. Every publish then creates a new build, and consumers get the newest one.
@@ -93,8 +93,16 @@ Protoloom compiles your files together with their dependencies before it accepts
 Open **Browse**, then `releases`, then `dev.surf.protection`, then `protection-contracts`. You see the version, its files in the proto viewer, and the dependency on `economy-contracts`. The **Usage** tab shows the snippet other teams copy:
 
 ```kotlin
-protoloom("dev.surf.protection:protection-contracts:1.0.0")
+weaver("dev.surf.protection:protection-contracts:1.0.0")
 ```
+
+## Dependency checks
+
+When you publish, the server checks that every dependency you declared exists. It looks only in hosted proto repositories your key can read, either directly or through a group: first the repository you publish to, then the others by resolution priority. See [Dependencies and resolution](/docs/resolution#resolution-when-publishing).
+
+Mirrors are never consulted. If a dependency is only available through a mirror, publish it into a hosted repository first.
+
+Publishing to a group or to a mirror is not possible: the server answers `405 method_not_allowed`. Publish to a hosted repository and let the group include it.
 
 ## Next steps
 

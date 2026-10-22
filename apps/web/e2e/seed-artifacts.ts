@@ -1,6 +1,14 @@
-import { createLocalStore, createRegistry, packArchive, type Principal, type ProtoFile } from "@protoloom/core";
-import { repository, type Db } from "@protoloom/db";
-import { ARTIFACTS, USERS, serverEnv } from "./fixtures";
+import {
+  createRegistry,
+  createRepoService,
+  createStoreSetFromEnv,
+  deriveSecretKey,
+  packArchive,
+  type Principal,
+  type ProtoFile,
+} from "@weaver/core";
+import { repository, type Db } from "@weaver/db";
+import { ARTIFACTS, AUTH_SECRET, MIRROR_UPSTREAM, USERS, serverEnv } from "./fixtures";
 
 function proto(path: string, body: string, imports: string[] = []): ProtoFile {
   const pkg = path.replace(/\/[^/]+$/, "").replaceAll("/", ".");
@@ -12,23 +20,28 @@ function proto(path: string, body: string, imports: string[] = []): ProtoFile {
  * Seeds the browse fixtures through the real publish path: a public `releases` and a private
  * `snapshots` repository, `dev.example:demo:1.0.0` (money.proto), `dev.example:orders:1.0.0`
  * depending on it (so deleting demo hits `has_dependents`), two builds of
- * `dev.example:demo:1.1.0-SNAPSHOT` and `dev.example:scratch:0.1.0`, which a test deletes.
+ * `dev.example:demo:1.1.0-SNAPSHOT` and `dev.example:scratch:0.1.0`, which a test deletes. Also a
+ * public proto mirror without caching and a public proto group of `releases` and that mirror.
  */
 export async function seedArtifacts(db: Db): Promise<void> {
-  await db.insert(repository).values([
-    { name: ARTIFACTS.releases, description: "Released contracts", visibility: "public" },
-    { name: ARTIFACTS.snapshots, description: "Snapshot builds", visibility: "private" },
-  ]);
+  const rows = await db.insert(repository).values([
+    { name: ARTIFACTS.releases, format: "proto", kind: "hosted", description: "Released contracts", visibility: "public" },
+    { name: ARTIFACTS.snapshots, format: "proto", kind: "hosted", description: "Snapshot builds", visibility: "private" },
+  ]).returning({ id: repository.id, name: repository.name });
 
-  const registry = createRegistry({ db, blobs: createLocalStore(serverEnv().STORAGE_LOCAL_PATH!) });
+  const stores = createStoreSetFromEnv({ STORAGE_DRIVER: "local", STORAGE_LOCAL_PATH: serverEnv().STORAGE_LOCAL_PATH });
+  // Publishing reads repositories only; upstream secrets are never touched.
+  const repos = createRepoService({ db, stores, secretKey: deriveSecretKey(AUTH_SECRET) });
+  const registry = createRegistry({ db, stores, repos });
   // Publishing needs a key with write access (users can't publish from the UI); this one is never stored.
   const publisher: Principal = {
     kind: "apikey",
     keyId: "e2e-seed-key",
     userId: USERS.admin.id,
     role: "admin",
-    permissions: [ARTIFACTS.releases, ARTIFACTS.snapshots].map((repo) => ({
-      repository: repo,
+    permissions: rows.map((repo) => ({
+      repositoryId: repo.id,
+      repository: repo.name,
       groupPrefix: null,
       access: "write" as const,
     })),
@@ -57,4 +70,20 @@ export async function seedArtifacts(db: Db): Promise<void> {
   await publish(ARTIFACTS.snapshots, "demo", "1.1.0-SNAPSHOT", [money]);
   // Deleted by browse.spec (its only version), so nothing else may rely on it.
   await publish(ARTIFACTS.releases, "scratch", "0.1.0", [proto("dev/example/scratch/v1/scratch.proto", "message Scratch {}")]);
+
+  const asAdmin: Principal = { kind: "user", userId: USERS.admin.id, role: "admin" };
+  await repos.create(asAdmin, {
+    name: ARTIFACTS.mirror,
+    format: "proto",
+    kind: "mirror",
+    visibility: "public",
+    upstreams: [{ url: MIRROR_UPSTREAM, authType: "none" }],
+  });
+  await repos.create(asAdmin, {
+    name: ARTIFACTS.group,
+    format: "proto",
+    kind: "group",
+    visibility: "public",
+    members: [ARTIFACTS.releases, ARTIFACTS.mirror],
+  });
 }

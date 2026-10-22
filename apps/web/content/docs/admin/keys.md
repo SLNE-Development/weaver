@@ -5,7 +5,7 @@ section: Administration
 order: 3
 ---
 
-Builds talk to Protoloom with API keys. Every key belongs to a user, has a name, an optional expiry and a list of **permission entries**. The secret is shown once and stored only as a hash.
+Builds talk to Weaver with API keys. Every key belongs to a user, has a name, an optional expiry and a list of **permission entries**. The secret is shown once and stored only as a hash.
 
 ## Create a key
 
@@ -15,7 +15,7 @@ Builds talk to Protoloom with API keys. Every key belongs to a user, has a name,
 4. Add one or more permission entries (below).
 5. Copy the key from the dialog. "You won't see this key again": after closing the dialog, nobody can read it, not even an admin.
 
-Store it as a secret in your CI and as `PROTOLOOM_TOKEN` locally.
+Store it as a secret in your CI and as `WEAVER_TOKEN` locally.
 
 ## Permission entries
 
@@ -82,4 +82,4 @@ Choose **Revoke** next to the key. It stops working on the next request. Admins 
 Authorization: Bearer <your API key>
 ```
 
-The Gradle plugin and the CLI send `PROTOLOOM_TOKEN` this way, and only to the configured server URL. A rejected key fails with `401 unauthorized`. A key without access to a private repository gets `404 not_found`, as if the repository didn't exist. See [Troubleshooting](/docs/troubleshooting#401-or-403-from-gradle-or-the-cli).
+The Gradle plugin and the CLI send `WEAVER_TOKEN` this way, and only to the configured server URL. A rejected key fails with `401 unauthorized`. A key without access to a private repository gets `404 not_found`, as if the repository didn't exist. See [Troubleshooting](/docs/troubleshooting#401-or-403-from-gradle-or-the-cli).

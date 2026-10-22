@@ -19,7 +19,7 @@ export const dynamic = "force-dynamic";
 
 export function generateMetadata(): Metadata {
   return pageMetadata({
-    title: "Protoloom · Versioned .proto contracts for every build",
+    title: "Weaver · Self-hosted Maven, npm, Docker and proto registry",
     absoluteTitle: true,
     description: SITE_DESCRIPTION,
     path: "/",
@@ -57,10 +57,10 @@ export default async function LandingPage() {
       <JsonLd url={siteUrl()} />
       <TopBar showBrowse={data.anonymousView} />
       <main data-testid="landing">
-        <Hero host={host} stats={data.stats} providers={providers} showBrowse={data.anonymousView} />
-        <HowItWorks />
-        <BrowsePreview />
+        <Hero host={host} origin={origin} stats={data.stats} providers={providers} showBrowse={data.anonymousView} />
+        <HowItWorks origin={origin} host={host} />
         <Clients origin={origin} />
+        <BrowsePreview />
         <Features />
         <SelfHosting origin={origin} />
         <InviteCta providers={providers} />

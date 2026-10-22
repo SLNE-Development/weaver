@@ -1,12 +1,12 @@
 import * as React from "react"
-import { cn } from "@protoloom/ui/lib/utils"
+import { cn } from "@weaver/ui/lib/utils"
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
   MoreHorizontalIcon,
 } from "lucide-react"
 
-import { buttonVariants, type Button } from "@protoloom/ui/components/button"
+import { buttonVariants, type Button } from "@weaver/ui/components/button"
 
 function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
   return (

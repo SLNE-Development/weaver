@@ -3,14 +3,14 @@
 import { Fragment, useEffect, useRef, useState } from "react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { BotIcon, ChevronRightIcon, KeyRoundIcon, ScrollTextIcon, ShieldAlertIcon, UserIcon, UserXIcon } from "lucide-react";
-import { Badge } from "@protoloom/ui/components/badge";
-import { Button } from "@protoloom/ui/components/button";
-import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@protoloom/ui/components/empty";
-import { Select, SelectContent, SelectItem, SelectSeparator, SelectTrigger, SelectValue } from "@protoloom/ui/components/select";
-import { Skeleton } from "@protoloom/ui/components/skeleton";
-import { Spinner } from "@protoloom/ui/components/spinner";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@protoloom/ui/components/table";
-import { cn } from "@protoloom/ui/lib/utils";
+import { Badge } from "@weaver/ui/components/badge";
+import { Button } from "@weaver/ui/components/button";
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@weaver/ui/components/empty";
+import { Select, SelectContent, SelectItem, SelectSeparator, SelectTrigger, SelectValue } from "@weaver/ui/components/select";
+import { Skeleton } from "@weaver/ui/components/skeleton";
+import { Spinner } from "@weaver/ui/components/spinner";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@weaver/ui/components/table";
+import { cn } from "@weaver/ui/lib/utils";
 import { useTRPC, type RouterOutputs } from "@/trpc/client";
 import { formatDateTime, formatTimestamp } from "../_components/format";
 

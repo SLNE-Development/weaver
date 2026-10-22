@@ -3,7 +3,7 @@ import { OG_IMAGE_SIZE } from "@/lib/seo";
 
 // The footer shows the instance host from BETTER_AUTH_URL, so render at request time.
 export const dynamic = "force-dynamic";
-export const alt = "Protoloom: versioned .proto contracts for every build";
+export const alt = "Weaver: one registry for Maven, npm, Docker and proto";
 export const size = OG_IMAGE_SIZE;
 export const contentType = "image/png";
 
@@ -11,9 +11,9 @@ export const contentType = "image/png";
 export default function OpengraphImage() {
   return renderOgCard(
     {
-      eyebrow: "Protobuf artifact registry",
-      title: "Versioned .proto contracts for every build.",
-      subtitle: "Publish from Gradle, checked on publish, fetched with all dependencies by Gradle and Node builds.",
+      eyebrow: "Self-hosted repository manager",
+      title: "One registry for Maven, npm, Docker and proto.",
+      subtitle: "Host your own artifacts, mirror Maven Central, npmjs and Docker Hub with optional caching, and serve them all from one place.",
     },
     { headers: { "cache-control": "public, max-age=3600" } },
   );

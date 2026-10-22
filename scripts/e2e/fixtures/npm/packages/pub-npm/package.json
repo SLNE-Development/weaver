@@ -1,0 +1,7 @@
+{
+  "name": "@e2e/pub-npm",
+  "version": "1.0.0",
+  "description": "Published by the npm client.",
+  "main": "index.js",
+  "license": "MIT"
+}

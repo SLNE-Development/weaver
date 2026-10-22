@@ -173,7 +173,7 @@ export async function validateProtos(input: {
   if (duplicates.length > 0) return duplicates;
   if (input.files.length === 0) return [];
 
-  const root = await mkdtemp(join(tmpdir(), "protoloom-validate-"));
+  const root = await mkdtemp(join(tmpdir(), "weaver-validate-"));
   try {
     await writeFiles(join(root, "src"), input.files);
     // buf rejects a module without .proto files, so deps is only declared when it has some.

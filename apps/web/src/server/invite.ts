@@ -1,7 +1,7 @@
 import { createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 
 /** Cookie that carries an invite token through the OAuth round trip. */
-export const INVITE_COOKIE = "protoloom_invite";
+export const INVITE_COOKIE = "weaver_invite";
 
 /** How long the invite cookie stays valid after `/invite/<token>` sets it. */
 export const INVITE_COOKIE_MAX_AGE_SECONDS = 15 * 60;

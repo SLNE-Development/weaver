@@ -1,6 +1,6 @@
 import { fileURLToPath } from "node:url";
 import { defineConfig, mergeConfig } from "vitest/config";
-import shared from "@protoloom/config/vitest.shared";
+import shared from "@weaver/config/vitest.shared";
 
 /** Dummy configuration so `src/env.ts` validates in tests; real secrets never reach tests. */
 const testEnv = {

@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { randomUUID } from "node:crypto";
-import { invite, user, type Db } from "@protoloom/db";
-import { startTestDb } from "@protoloom/db/testing";
+import { invite, user, type Db } from "@weaver/db";
+import { startTestDb } from "@weaver/db/testing";
 import { generateInviteToken, hashInviteToken } from "./invite";
 import { getInviteStatus } from "./invite-status";
 

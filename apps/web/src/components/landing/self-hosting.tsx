@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CodeHtml } from "./code-block";
+import { CodeFile } from "./code-block";
 import { highlight } from "./highlight";
 import { Eyebrow, Section } from "./layout";
 import { composeSnippet } from "./samples";
@@ -15,8 +15,8 @@ export async function SelfHosting({ origin }: { origin: string }) {
           One image, your infrastructure.
         </h2>
         <p className="text-sm leading-relaxed text-muted-foreground">
-          The web app and the worker ship in one Docker image. Bring PostgreSQL, Valkey and S3 or a local volume, or start
-          from the compose files in the repository.
+          The web app and the worker ship in one Docker image. Bring PostgreSQL, Valkey and S3 or a local volume, put HTTPS
+          in front, and serve Weaver at the root of its domain so Docker clients can reach it.
         </p>
         <ul className="mt-4 grid gap-2 text-sm text-muted-foreground">
           <li>
@@ -26,7 +26,7 @@ export async function SelfHosting({ origin }: { origin: string }) {
             <b className="font-medium text-foreground">Coolify</b> compose with generated secrets and bundled SeaweedFS
           </li>
           <li>
-            <b className="font-medium text-foreground">S3 or local disk</b> for archives
+            <b className="font-medium text-foreground">S3 or local disk</b> for hosted content and mirror caches
           </li>
         </ul>
         <Link
@@ -37,7 +37,7 @@ export async function SelfHosting({ origin }: { origin: string }) {
           <span aria-hidden="true">→</span>
         </Link>
       </div>
-      <CodeHtml html={html} label="docker-compose.yml" className="overflow-hidden rounded-lg border bg-surface" />
+      <CodeFile file="docker-compose.prod.yml (excerpt)" html={html} className="overflow-hidden rounded-lg border bg-surface" />
     </Section>
   );
 }

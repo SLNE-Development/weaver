@@ -1,9 +1,9 @@
-import type { Role } from "@protoloom/core";
+import type { Role } from "@weaver/core";
 
 /** All roles, lowest to highest privilege. */
 export const ROLES: readonly Role[] = ["viewer", "maintainer", "admin"];
 
-/** Whether `value` names a Protoloom role. */
+/** Whether `value` names a Weaver role. */
 export function isRole(value: unknown): value is Role {
   return typeof value === "string" && (ROLES as readonly string[]).includes(value);
 }

@@ -16,11 +16,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@protoloom/ui/components/alert-dialog";
-import { Button } from "@protoloom/ui/components/button";
-import { Field, FieldDescription, FieldLabel } from "@protoloom/ui/components/field";
-import { Input } from "@protoloom/ui/components/input";
-import { Spinner } from "@protoloom/ui/components/spinner";
+} from "@weaver/ui/components/alert-dialog";
+import { Button } from "@weaver/ui/components/button";
+import { Field, FieldDescription, FieldLabel } from "@weaver/ui/components/field";
+import { Input } from "@weaver/ui/components/input";
+import { Spinner } from "@weaver/ui/components/spinner";
 import { artifactHref, repositoryHref } from "@/lib/browse";
 import type { HasDependentsDetails } from "@/server/trpc/routers/versions";
 import type { AppRouter } from "@/server/trpc/root";

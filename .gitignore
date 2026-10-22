@@ -5,6 +5,8 @@ dist/
 build/
 .turbo/
 .gradle/
+# Eclipse / VS Code Java language server output
+gradle-plugin/bin/
 *.tsbuildinfo
 .env
 .env.*

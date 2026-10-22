@@ -2,8 +2,8 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import type { GenericEndpointContext } from "better-auth";
-import { invite, user, type Db } from "@protoloom/db";
-import { startTestDb } from "@protoloom/db/testing";
+import { invite, user, type Db } from "@weaver/db";
+import { startTestDb } from "@weaver/db/testing";
 import { generateInviteToken, hashInviteToken, serializeInviteCookie } from "./invite";
 import { INVITE_REQUIRED_MESSAGE, createUserGate } from "./user-gate";
 

@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
-import { cn } from "@protoloom/ui/lib/utils"
+import { cn } from "@weaver/ui/lib/utils"
 import { Tabs as TabsPrimitive } from "radix-ui"
 
 function Tabs({

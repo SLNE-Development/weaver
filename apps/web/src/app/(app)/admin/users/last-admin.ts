@@ -1,4 +1,4 @@
-import type { Role } from "@protoloom/core";
+import type { Role } from "@weaver/core";
 
 /** The fields the last-admin rule looks at. */
 export interface AdminCandidate {

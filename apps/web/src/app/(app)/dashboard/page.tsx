@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRightIcon, BoxesIcon, KeyRoundIcon, PackageIcon, PlusIcon, type LucideIcon } from "lucide-react";
-import { Button } from "@protoloom/ui/components/button";
-import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@protoloom/ui/components/empty";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@protoloom/ui/components/table";
+import { Button } from "@weaver/ui/components/button";
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@weaver/ui/components/empty";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@weaver/ui/components/table";
 import { KindBadge, PageContainer, Panel, RelativeTime, SectionTitle, VisibilityBadge } from "@/components/browse-ui";
 import { artifactHref, repositoryHref } from "@/lib/browse";
 import { requirePageAccess } from "@/server/session";
 import { api } from "@/trpc/server";
+import { FormatBadge } from "../repositories/_components/format-badge";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
@@ -54,7 +55,7 @@ export default async function DashboardPage() {
       <header className="flex flex-col gap-1 border-b pb-4">
         <h1 className="text-xl font-semibold tracking-tight">Dashboard</h1>
         <p className="text-sm text-muted-foreground">
-          {user ? `Welcome back, ${user.name}.` : "Public repositories of this Protoloom."}
+          {user ? `Welcome back, ${user.name}.` : "Public repositories of this Weaver."}
         </p>
       </header>
 
@@ -91,7 +92,7 @@ export default async function DashboardPage() {
           {user?.role === "admin" && (
             <EmptyContent>
               <Button asChild size="sm">
-                <Link href="/repositories/new">
+                <Link href="/repositories?create=1">
                   <PlusIcon />
                   Create repository
                 </Link>
@@ -176,15 +177,17 @@ export default async function DashboardPage() {
                         className="flex items-center gap-2 px-4 py-2 transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:outline-none"
                       >
                         <span className="min-w-0 flex-1 truncate font-mono text-[13px]">{repo.name}</span>
+                        <FormatBadge format={repo.format} />
                         <VisibilityBadge visibility={repo.visibility} />
+                        {/* Artifact and version counts exist for proto repositories only. */}
                         <span className="w-20 text-right font-mono text-[11px] text-muted-foreground tabular-nums">
-                          {repo.artifactCount} / {repo.versionCount}
+                          {repo.format === "proto" ? `${repo.artifactCount} / ${repo.versionCount}` : "—"}
                         </span>
                       </Link>
                     </li>
                   ))}
                 </ul>
-                <p className="border-t bg-surface px-4 py-1.5 text-right text-[11px] text-muted-foreground">artifacts / versions</p>
+                <p className="border-t bg-surface px-4 py-1.5 text-right text-[11px] text-muted-foreground">proto artifacts / versions</p>
               </Panel>
             </section>
 
@@ -193,10 +196,10 @@ export default async function DashboardPage() {
               <Panel className="divide-y">
                 <QuickLink href="/browse" icon={PackageIcon} title="Browse artifacts" text="Repositories, versions and proto files" />
                 {user && (
-                  <QuickLink href="/keys?create=1" icon={KeyRoundIcon} title="Create an API key" text="For Gradle and the protoloom CLI" />
+                  <QuickLink href="/keys?create=1" icon={KeyRoundIcon} title="Create an API key" text="For Gradle and the weaver CLI" />
                 )}
                 {user?.role === "admin" && (
-                  <QuickLink href="/repositories/new" icon={PlusIcon} title="Create a repository" text="Visibility, redeploys and cleanup" />
+                  <QuickLink href="/repositories?create=1" icon={PlusIcon} title="Create a repository" text="Hosted, mirror or group, for any format" />
                 )}
               </Panel>
             </section>

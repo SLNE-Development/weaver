@@ -26,7 +26,7 @@ export function docsOgCardInput({ eyebrow, title, subtitle, host, path }: DocsOg
   };
 }
 
-/** Renders a 1200×630 docs share card with the one Protoloom card template (see ./og). */
+/** Renders a 1200×630 docs share card with the one Weaver card template (see ./og). */
 export function renderDocsOgCard(card: DocsOgCard, init?: { headers?: Record<string, string> }) {
   return renderOgCard(docsOgCardInput(card), init);
 }

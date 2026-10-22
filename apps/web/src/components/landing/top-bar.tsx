@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { Button } from "@protoloom/ui/components/button";
-import { Logo } from "@protoloom/ui/components/logo";
-import { ThemeToggle } from "@protoloom/ui/components/theme-toggle";
+import { Button } from "@weaver/ui/components/button";
+import { Logo } from "@weaver/ui/components/logo";
+import { ThemeToggle } from "@weaver/ui/components/theme-toggle";
 import { Container } from "./layout";
 
 const linkClass = "rounded-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none";
@@ -11,7 +11,7 @@ export function TopBar({ showBrowse }: { showBrowse: boolean }) {
   return (
     <header className="sticky top-0 z-30 border-b bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70">
       <Container className="flex h-14 items-center gap-4 sm:gap-6">
-        <Link href="/" aria-label="Protoloom home" className="rounded-sm focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none">
+        <Link href="/" aria-label="Weaver home" className="rounded-sm focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none">
           <Logo variant="full" className="[&>span:last-child]:text-[15px]" />
         </Link>
         <nav aria-label="Main" className="flex items-center gap-4 text-[13px] sm:gap-5">

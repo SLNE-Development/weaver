@@ -1,7 +1,7 @@
 "use client";
 
 import { ClipboardCopyIcon, CopyIcon } from "lucide-react";
-import { Button } from "@protoloom/ui/components/button";
+import { Button } from "@weaver/ui/components/button";
 import { useCommandActions } from "./command-actions";
 import { copyText } from "./copy-button";
 

@@ -2,3 +2,5 @@
 *.sh text eol=lf
 docker/Dockerfile text eol=lf
 gradle-plugin/gradlew text eol=lf
+*.htpasswd text eol=lf
+scripts/e2e/versions.env text eol=lf

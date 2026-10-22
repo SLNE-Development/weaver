@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Maven settings that send every repository, plugins included, through one mirror
+     (${env.WEAVER_MIRROR_URL}, a Weaver group), as a team would set it up. -->
+<settings xmlns="http://maven.apache.org/SETTINGS/1.2.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.2.0 https://maven.apache.org/xsd/settings-1.2.0.xsd">
+  <servers>
+    <server>
+      <id>weaver-all</id>
+      <username>${env.WEAVER_USER}</username>
+      <password>${env.WEAVER_PASS}</password>
+    </server>
+  </servers>
+  <mirrors>
+    <mirror>
+      <id>weaver-all</id>
+      <mirrorOf>*</mirrorOf>
+      <url>${env.WEAVER_MIRROR_URL}</url>
+    </mirror>
+  </mirrors>
+</settings>

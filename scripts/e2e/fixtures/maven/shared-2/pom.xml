@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- dev.weaver.e2e:shared 2.0.0 in the hosted repository; 1.0.0 (shared-1) is in the upstream. -->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>dev.weaver.e2e</groupId>
+  <artifactId>shared</artifactId>
+  <!-- maven.sh rewrites the line marked e2e:version to deploy other versions. -->
+  <version>2.0.0</version><!-- e2e:version -->
+  <packaging>jar</packaging>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.release>17</maven.compiler.release>
+    <!-- Written into build.txt in the jar, so a consumer can tell snapshot builds apart (-Dbuild=<n>). -->
+    <build>0</build>
+  </properties>
+
+  <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+      </resource>
+    </resources>
+  </build>
+</project>

@@ -19,5 +19,6 @@ node_modules
 !.env.example
 docs
 coverage
-# Smoke-test seed: never part of the image (scripts/e2e-smoke.sh copies it into a test container).
+# E2E seed and harness: never part of the image (scripts/e2e/run.sh copies the seed into the test containers).
 apps/web/scripts
+scripts/e2e/

@@ -1,43 +1,53 @@
 import Link from "next/link";
-import { Button } from "@protoloom/ui/components/button";
+import { Button } from "@weaver/ui/components/button";
 import type { SocialProviderId } from "@/server/auth";
 import type { PublicStats } from "@/lib/public-catalog";
-import { HeroCards } from "./hero-cards";
+import { HeroCards, type HighlightedFormat } from "./hero-cards";
 import { highlight } from "./highlight";
 import { Container, Eyebrow } from "./layout";
-import { HERO_BUILD_GRADLE, HERO_SETTINGS_GRADLE, PROTO_FILES } from "./samples";
+import { heroSamples } from "./samples";
 import { SignInButtons } from "./sign-in-buttons";
 
 function plural(count: number, one: string, many: string): string {
   return `${count.toLocaleString("en-US")} ${count === 1 ? one : many}`;
 }
 
-/** First screen: what Protoloom is, the way in, and the layered Gradle + proto cards. */
+/** Where each format's clients point, in the order of {@link heroSamples}. */
+function clientUrls(origin: string, host: string): string[] {
+  return [`${origin}/maven/<repo>/`, `${origin}/npm/<repo>/`, `${host}/<repo>/<image>:<tag>`, `${origin}/api/v1 via the Gradle plugin or CLI`];
+}
+
+/** First screen: what Weaver is, the way in, and a client card with one tab per format. */
 export async function Hero({
   host,
+  origin,
   stats,
   providers,
   showBrowse,
 }: {
   host: string;
+  /** Public origin of this instance, filled into the snippets. */
+  origin: string;
   /** Public counts; omitted while anonymous view is off. */
   stats: PublicStats | null;
   providers: SocialProviderId[];
   showBrowse: boolean;
 }) {
-  const [buildGradle, settingsGradle, ...protos] = await Promise.all([
-    highlight(HERO_BUILD_GRADLE, "kotlin"),
-    highlight(HERO_SETTINGS_GRADLE, "kotlin"),
-    ...PROTO_FILES.map((file) => highlight(file.code, "proto", { lineNumbers: true })),
-  ]);
-  const protoFiles = PROTO_FILES.map((file, i) => ({ name: file.path.split("/").at(-1)!, html: protos[i]! }));
+  const urls = clientUrls(origin, host);
+  const formats: HighlightedFormat[] = await Promise.all(
+    heroSamples(origin).map(async (sample, i) => ({
+      format: sample.format,
+      url: urls[i]!,
+      files: await Promise.all(sample.snippets.map(async (s) => ({ file: s.file, html: await highlight(s.code, s.lang) }))),
+    })),
+  );
 
   return (
     <section
       aria-labelledby="hero-title"
       className="border-b bg-[linear-gradient(var(--border)_1px,transparent_1px),linear-gradient(90deg,var(--border)_1px,transparent_1px)] bg-size-[32px_32px] bg-position-[-1px_-1px]"
     >
-      <Container className="grid grid-cols-[minmax(0,1fr)] items-center gap-12 py-12 sm:py-16 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:py-[72px]">
+      <Container className="grid grid-cols-[minmax(0,1fr)] items-start gap-12 py-12 sm:py-16 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:py-[72px]">
         <div className="max-w-[620px] bg-background shadow-[0_0_0_18px_var(--background)] xl:max-w-none">
           <Eyebrow>
             <span aria-hidden="true" className="size-1.5 rounded-full bg-release" />
@@ -55,11 +65,11 @@ export async function Hero({
             id="hero-title"
             className="mb-[18px] text-[34px] leading-[1.06] font-semibold tracking-[-0.035em] text-balance sm:text-[42px] xl:text-[46px] xl:leading-[1.04]"
           >
-            Versioned .proto contracts for every build.
+            One registry for Maven, npm, Docker and proto.
           </h1>
-          <p className="mb-[26px] max-w-[48ch] text-base leading-[1.55] text-muted-foreground">
-            Publish protobuf files from Gradle as versioned artifacts. Protoloom checks that they compile, resolves their
-            dependencies, and hands Kotlin, Java and Node builds exactly the files they need.
+          <p className="mb-[26px] max-w-[50ch] text-base leading-[1.55] text-muted-foreground">
+            Weaver hosts the packages and images you publish, mirrors Maven Central, npmjs and Docker Hub, and puts both
+            behind one URL per format. Stock clients connect with a URL and a token, to a server you run.
           </p>
           <div className="flex flex-wrap items-center gap-2.5">
             <SignInButtons providers={providers} />
@@ -81,21 +91,14 @@ export async function Hero({
               <b className="font-medium text-foreground">Invite only</b> · ask an admin
             </li>
             <li>
-              <b className="font-medium text-foreground">Gradle</b> + <b className="font-medium text-foreground">Node</b> clients
+              <b className="font-medium text-foreground">Stock clients</b> · no plugins
             </li>
             <li>
               <b className="font-medium text-foreground">Self-hosted</b>
             </li>
           </ul>
         </div>
-        <HeroCards
-          gradleFiles={[
-            { name: "build.gradle.kts", html: buildGradle! },
-            { name: "settings.gradle.kts", html: settingsGradle! },
-          ]}
-          protoFiles={protoFiles}
-          protoTree={["surf", "economy", "v1"]}
-        />
+        <HeroCards formats={formats} />
       </Container>
     </section>
   );

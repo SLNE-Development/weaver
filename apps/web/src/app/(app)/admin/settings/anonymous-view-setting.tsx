@@ -5,12 +5,12 @@ import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { CheckIcon, GlobeIcon, LockIcon, XIcon } from "lucide-react";
 import { toast } from "sonner";
-import { Badge } from "@protoloom/ui/components/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@protoloom/ui/components/card";
-import { Label } from "@protoloom/ui/components/label";
-import { Spinner } from "@protoloom/ui/components/spinner";
-import { Switch } from "@protoloom/ui/components/switch";
-import { cn } from "@protoloom/ui/lib/utils";
+import { Badge } from "@weaver/ui/components/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@weaver/ui/components/card";
+import { Label } from "@weaver/ui/components/label";
+import { Spinner } from "@weaver/ui/components/spinner";
+import { Switch } from "@weaver/ui/components/switch";
+import { cn } from "@weaver/ui/lib/utils";
 import { useTRPC } from "@/trpc/client";
 
 const VISIBLE = ["The dashboard", "Public repositories and their artifacts, versions and .proto files"];

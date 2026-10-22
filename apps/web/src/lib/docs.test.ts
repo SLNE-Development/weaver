@@ -16,7 +16,7 @@ import {
   slugFromFile,
 } from "./docs";
 
-/** The pages of the docs plan (plus server settings), in reading order. */
+/** The pages of the docs plan (plus server settings and the format client pages), in reading order. */
 const PLAN = [
   "/docs",
   "/docs/join",
@@ -27,6 +27,9 @@ const PLAN = [
   "/docs/validation",
   "/docs/gradle",
   "/docs/cli",
+  "/docs/npm",
+  "/docs/maven",
+  "/docs/docker",
   "/docs/api",
   "/docs/admin/repositories",
   "/docs/admin/users",
@@ -78,8 +81,8 @@ describe("slug mapping", () => {
 
 describe("fillUrl", () => {
   it("replaces every {{url}} with the instance URL without a trailing slash", () => {
-    expect(fillUrl("export PROTOLOOM_URL={{url}}\nopen {{url}}/docs", "https://protos.test/")).toBe(
-      "export PROTOLOOM_URL=https://protos.test\nopen https://protos.test/docs",
+    expect(fillUrl("export WEAVER_URL={{url}}\nopen {{url}}/docs", "https://protos.test/")).toBe(
+      "export WEAVER_URL=https://protos.test\nopen https://protos.test/docs",
     );
   });
 
@@ -96,7 +99,7 @@ describe("with a fixture docs directory", () => {
   let dir: string;
 
   beforeAll(async () => {
-    dir = await mkdtemp(join(tmpdir(), "protoloom-docs-"));
+    dir = await mkdtemp(join(tmpdir(), "weaver-docs-"));
     await mkdir(join(dir, "admin"));
     const page = (title: string, section: string, order: number, body = "") =>
       `---\ntitle: ${title}\ndescription: About ${title}.\nsection: ${section}\norder: ${order}\n---\n\n${body}`;
@@ -173,7 +176,7 @@ describe("rendering", () => {
   let dir: string;
 
   beforeAll(async () => {
-    dir = await mkdtemp(join(tmpdir(), "protoloom-render-"));
+    dir = await mkdtemp(join(tmpdir(), "weaver-render-"));
     await writeFile(
       join(dir, "index.md"),
       [
@@ -187,7 +190,7 @@ describe("rendering", () => {
         "Open {{url}}/login.",
         "",
         '```kotlin title="build.gradle.kts"',
-        'protoloom { url = "{{url}}" }',
+        'weaver { url = "{{url}}" }',
         "```",
         "",
         "> [!WARNING]",
@@ -228,7 +231,7 @@ describe("rendering", () => {
     expect(doc?.html.replace(/<[^>]+>/g, "")).toContain("Open https://protos.test/login.");
     expect(doc?.html).not.toContain("{{url}}");
     // Highlighted code splits text into spans; strip tags to check the code content.
-    expect(doc?.html.replace(/<[^>]+>/g, "")).toContain('protoloom { url = "https://protos.test" }');
+    expect(doc?.html.replace(/<[^>]+>/g, "")).toContain('weaver { url = "https://protos.test" }');
   });
 
   it("highlights code with light and dark colours, a title and a copy button", async () => {
@@ -311,7 +314,47 @@ describe("the real docs", () => {
     const { readFile } = await import("node:fs/promises");
     for (const doc of docs) {
       const text = await readFile(doc.file, "utf8");
-      expect(text, doc.file).not.toMatch(/protoloom\.slne\.dev|protos\.example\.com/);
+      expect(text, doc.file).not.toMatch(/weaver\.slne\.dev|protos\.example\.com|weaver\.example\.com/);
+    }
+  });
+
+  it("config page documents every environment variable", async () => {
+    const { readFile } = await import("node:fs/promises");
+    const envFiles = [join(process.cwd(), "src", "env.ts"), join(process.cwd(), "..", "worker", "src", "env.ts")];
+    const keys = new Set<string>();
+    for (const file of envFiles) {
+      for (const match of (await readFile(file, "utf8")).matchAll(/^\s+([A-Z][A-Z0-9_]+):\s*z\./gm)) keys.add(match[1]!);
+    }
+    expect(keys.size).toBeGreaterThan(10);
+    const config = await readFile(join(process.cwd(), "content", "docs", "self-host", "config.md"), "utf8");
+    for (const key of keys) expect(config, key).toContain(`\`${key}\``);
+  });
+
+  it("self-hosting docs cover proxy body limits", async () => {
+    const { readFile } = await import("node:fs/promises");
+    const compose = await readFile(join(process.cwd(), "content", "docs", "self-host", "compose.md"), "utf8");
+    const troubleshooting = await readFile(join(process.cwd(), "content", "docs", "troubleshooting.md"), "utf8");
+    expect(compose).toContain("client_max_body_size 0");
+    expect(compose).toContain("proxy_request_buffering off");
+    expect(troubleshooting).toContain("413");
+  });
+
+  it("docs describe the upgrade from protoloom only as a data reset", async () => {
+    const { readFile } = await import("node:fs/promises");
+    const upgradePages = ["/docs/self-host/compose", "/docs/self-host/coolify"];
+    for (const doc of docs) {
+      const text = await readFile(doc.file, "utf8");
+      if (!upgradePages.includes(doc.path)) {
+        expect(text, doc.file).not.toMatch(/protoloom/i);
+        continue;
+      }
+      expect(text, doc.file).toContain("drops repositories");
+      // Protoloom is named only in the page's closing "Upgrading from Protoloom" section.
+      const start = text.indexOf("## Upgrading from Protoloom");
+      expect(start, doc.file).toBeGreaterThan(0);
+      const section = text.slice(start);
+      expect(section.slice(3).includes("\n## "), doc.file).toBe(false);
+      expect(text.slice(0, start), doc.file).not.toMatch(/protoloom/i);
     }
   });
 

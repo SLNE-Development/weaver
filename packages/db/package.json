@@ -1,5 +1,5 @@
 {
-  "name": "@protoloom/db",
+  "name": "@weaver/db",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -21,7 +21,7 @@
     "pg": "8.23.1"
   },
   "devDependencies": {
-    "@protoloom/config": "workspace:*",
+    "@weaver/config": "workspace:*",
     "@testcontainers/postgresql": "12.2.1",
     "@types/node": "26.6.5",
     "@types/pg": "8.23.1",

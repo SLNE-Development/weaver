@@ -2,10 +2,10 @@
 
 import * as React from "react"
 import { type VariantProps } from "class-variance-authority"
-import { cn } from "@protoloom/ui/lib/utils"
+import { cn } from "@weaver/ui/lib/utils"
 import { ToggleGroup as ToggleGroupPrimitive } from "radix-ui"
 
-import { toggleVariants } from "@protoloom/ui/components/toggle"
+import { toggleVariants } from "@weaver/ui/components/toggle"
 
 const ToggleGroupContext = React.createContext<
   VariantProps<typeof toggleVariants> & {

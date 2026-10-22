@@ -11,10 +11,10 @@
   },
   "iconLibrary": "lucide",
   "aliases": {
-    "components": "@protoloom/ui/components",
-    "utils": "@protoloom/ui/lib/utils",
-    "hooks": "@protoloom/ui/hooks",
-    "lib": "@protoloom/ui/lib",
-    "ui": "@protoloom/ui/components"
+    "components": "@weaver/ui/components",
+    "utils": "@weaver/ui/lib/utils",
+    "hooks": "@weaver/ui/hooks",
+    "lib": "@weaver/ui/lib",
+    "ui": "@weaver/ui/components"
   }
 }

@@ -1,5 +1,5 @@
 {
-  "name": "@protoloom/jobs",
+  "name": "@weaver/jobs",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -18,7 +18,7 @@
     "test": "vitest run"
   },
   "devDependencies": {
-    "@protoloom/config": "workspace:*",
+    "@weaver/config": "workspace:*",
     "@testcontainers/valkey": "12.2.1",
     "@types/node": "26.6.5",
     "eslint": "10.13.0",

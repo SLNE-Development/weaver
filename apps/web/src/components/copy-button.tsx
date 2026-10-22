@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { CheckIcon, CopyIcon } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@protoloom/ui/components/button";
-import { cn } from "@protoloom/ui/lib/utils";
+import { Button } from "@weaver/ui/components/button";
+import { cn } from "@weaver/ui/lib/utils";
 
 /** Copies `text` to the clipboard and shows a toast; reports failures (e.g. no clipboard permission). */
 export async function copyText(text: string, what = "Copied to clipboard"): Promise<boolean> {

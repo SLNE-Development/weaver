@@ -5,7 +5,7 @@ section: Getting started
 order: 2
 ---
 
-Protoloom has no passwords and no open sign-up. You join with an **invite link** from an admin and sign in with GitHub or Discord. This takes about two minutes.
+Weaver has no passwords and no open sign-up. You join with an **invite link** from an admin and sign in with GitHub or Discord. This takes about two minutes.
 
 ## 1. Get an invite link
 
@@ -21,16 +21,16 @@ The admin picks your role when creating the invite: `viewer`, `maintainer` or `a
 
 Open the link in your browser. The page shows the role you are about to get and a button for each sign-in provider this instance supports, such as **Continue with GitHub** or **Continue with Discord**.
 
-Choose a provider and approve the request on GitHub or Discord. You come back to Protoloom signed in, with the role from the invite. The invite is now used up.
+Choose a provider and approve the request on GitHub or Discord. You come back to Weaver signed in, with the role from the invite. The invite is now used up.
 
 > [!WARNING]
 > **Finish within 15 minutes.** Opening the invite link remembers it in your browser for 15 minutes. If the sign-in takes longer, or you switch browsers in between, open the link again. It still works as long as nobody has used it.
 
-If you see "You need an invite to join this Protoloom.", the invite was not found in your browser. It may be expired, already used, or opened in a different browser. Ask the admin for a new link.
+If you see "You need an invite to join this Weaver.", the invite was not found in your browser. It may be expired, already used, or opened in a different browser. Ask the admin for a new link.
 
 ## 3. Connect a second provider
 
-Signing in with a provider only works for accounts you have connected yourself. Protoloom never links accounts by matching email addresses. If you joined with GitHub and later sign in with Discord, Protoloom treats that as a new person and asks for an invite.
+Signing in with a provider only works for accounts you have connected yourself. Weaver never links accounts by matching email addresses. If you joined with GitHub and later sign in with Discord, Weaver treats that as a new person and asks for an invite.
 
 To use both providers:
 

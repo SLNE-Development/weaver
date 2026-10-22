@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { CompassIcon } from "lucide-react";
-import { Button } from "@protoloom/ui/components/button";
+import { Button } from "@weaver/ui/components/button";
 import { StatusPage } from "@/components/status-page";
 
 /** 404 inside the app shell. */

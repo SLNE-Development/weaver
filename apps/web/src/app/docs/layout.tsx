@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { Logo } from "@protoloom/ui/components/logo";
-import { ThemeToggle } from "@protoloom/ui/components/theme-toggle";
+import { Logo } from "@weaver/ui/components/logo";
+import { ThemeToggle } from "@weaver/ui/components/theme-toggle";
 import { DocsMobileNav } from "@/components/docs/docs-mobile-nav";
 import { DocsNav } from "@/components/docs/docs-nav";
 import { DocsSearch } from "@/components/docs/docs-search";
@@ -14,7 +14,7 @@ import "./docs.css";
 export function generateMetadata(): Metadata {
   return {
     metadataBase: new URL(env.BETTER_AUTH_URL),
-    title: { template: "%s · Protoloom", default: "Docs · Protoloom" },
+    title: { template: "%s · Weaver", default: "Docs · Weaver" },
   };
 }
 
@@ -36,7 +36,7 @@ export default async function DocsLayout({ children }: { children: ReactNode }) 
           <div className="flex min-w-0 items-center gap-2 text-[15px] font-semibold">
             <Link href="/" className="flex items-center gap-2 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring/50">
               <Logo className="[&_svg]:size-6" />
-              <span className="hidden sm:inline">Protoloom</span>
+              <span className="hidden sm:inline">Weaver</span>
             </Link>
             <span className="font-normal text-muted-foreground" aria-hidden="true">
               /

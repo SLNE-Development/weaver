@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { cn } from "@protoloom/ui/lib/utils"
+import { cn } from "@weaver/ui/lib/utils"
 import { ChevronDownIcon } from "lucide-react"
 import { Accordion as AccordionPrimitive } from "radix-ui"
 

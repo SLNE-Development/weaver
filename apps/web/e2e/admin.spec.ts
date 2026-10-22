@@ -1,8 +1,9 @@
 import { readFileSync } from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
-import { eq } from "drizzle-orm";
-import { auditEvent, createDb, repository, session, setting, user } from "@protoloom/db";
-import { BASE_URL, STATE_FILE, USERS, sessionToken } from "./fixtures";
+import { eq, inArray, or } from "drizzle-orm";
+import { createRepoService, createStoreSetFromEnv, deriveSecretKey, rollupUsage } from "@weaver/core";
+import { apikey, auditEvent, createDb, repository, session, setting, storageSnapshot, usageEvent, user } from "@weaver/db";
+import { AUTH_SECRET, BASE_URL, STATE_FILE, USERS, serverEnv, sessionToken } from "./fixtures";
 import { loginAs } from "./helpers";
 
 /**
@@ -67,8 +68,8 @@ test.beforeAll(async () => {
     db
       .insert(repository)
       .values([
-        { name: PUBLIC_REPO, visibility: "public", description: "Public protos" },
-        { name: PRIVATE_REPO, visibility: "private" },
+        { name: PUBLIC_REPO, format: "proto", kind: "hosted", visibility: "public", description: "Public protos" },
+        { name: PRIVATE_REPO, format: "proto", kind: "hosted", visibility: "private" },
       ])
       .onConflictDoNothing(),
   );
@@ -114,7 +115,7 @@ test.describe("invites", () => {
     try {
       const visitor = await anonymous.newPage();
       await visitor.goto(url);
-      await expect(visitor.getByRole("heading", { name: "You're invited to Protoloom" })).toBeVisible();
+      await expect(visitor.getByRole("heading", { name: "You're invited to Weaver" })).toBeVisible();
       await expect(visitor.getByTestId("invite-role")).toHaveText("viewer");
       await expect(visitor.getByRole("button", { name: "Continue with GitHub" })).toBeVisible();
     } finally {
@@ -316,5 +317,103 @@ test.describe("viewers", () => {
       await page.goto(path);
       await expect(page).toHaveURL("/dashboard");
     }
+  });
+});
+
+const STATS_MIRROR = "stats-mirror";
+const STATS_HOSTED = "stats-hosted";
+const ADMIN_KEY = { id: "e2e-stats-admin-key", name: "Stats CI key" } as const;
+const MAINTAINER_KEY = { id: "e2e-stats-maintainer-key", name: "Maintainer laptop" } as const;
+
+test.describe("usage statistics", () => {
+  test.beforeAll(async () => {
+    await withDb(async (db) => {
+      const stores = createStoreSetFromEnv({ STORAGE_DRIVER: "local", STORAGE_LOCAL_PATH: serverEnv().STORAGE_LOCAL_PATH });
+      const repos = createRepoService({ db, stores, secretKey: deriveSecretKey(AUTH_SECRET) });
+      const admin = { kind: "user", userId: USERS.admin.id, role: "admin" } as const;
+      await repos.create(admin, { name: STATS_HOSTED, format: "proto", kind: "hosted", visibility: "public" }).catch(() => undefined);
+      await repos
+        .create(admin, {
+          name: STATS_MIRROR,
+          format: "proto",
+          kind: "mirror",
+          visibility: "public",
+          upstreams: [{ url: "https://stats.example.invalid/api", authType: "none" }],
+        })
+        .catch(() => undefined);
+      await db.update(repository).set({ config: { cache: { enabled: true } } }).where(eq(repository.name, STATS_MIRROR));
+      const [hosted] = await db.select({ id: repository.id }).from(repository).where(eq(repository.name, STATS_HOSTED));
+      const [mirror] = await db.select({ id: repository.id }).from(repository).where(eq(repository.name, STATS_MIRROR));
+
+      // Reruns against the same database start from the same events.
+      await db
+        .delete(usageEvent)
+        .where(or(inArray(usageEvent.repositoryId, [hosted!.id, mirror!.id]), inArray(usageEvent.apiKeyId, [ADMIN_KEY.id, MAINTAINER_KEY.id])));
+      const now = new Date();
+      await db
+        .insert(apikey)
+        .values([
+          { ...ADMIN_KEY, key: "hash-admin", referenceId: USERS.admin.id, createdAt: now, updatedAt: now },
+          { ...MAINTAINER_KEY, key: "hash-maintainer", referenceId: USERS.maintainer.id, createdAt: now, updatedAt: now },
+        ])
+        .onConflictDoNothing();
+      await db.insert(usageEvent).values([
+        { repositoryId: mirror!.id, path: "/pull-seeded.proto", action: "download", cache: "hit", bytes: 100, userId: USERS.admin.id, apiKeyId: ADMIN_KEY.id },
+        { repositoryId: mirror!.id, path: "/pull-seeded-miss.proto", action: "download", cache: "miss", bytes: 100, userId: USERS.admin.id, apiKeyId: ADMIN_KEY.id },
+        { repositoryId: hosted!.id, path: "/maintainer-pull.proto", action: "download", bytes: 50, userId: USERS.maintainer.id, apiKeyId: MAINTAINER_KEY.id },
+      ]);
+      await rollupUsage({ db, repos });
+      // The rollup measures the stores; pin the mirror's cache size to a known figure.
+      const row = { day: now.toISOString().slice(0, 10), repositoryId: mirror!.id, hostedBytes: 0, cacheBytes: 3 * 1024 * 1024, assetCount: 2, takenAt: now };
+      await db.insert(storageSnapshot).values(row).onConflictDoUpdate({ target: [storageSnapshot.day, storageSnapshot.repositoryId], set: row });
+    });
+  });
+
+  test("an admin sees downloads, storage, the mirror hit rate and a key linking to its activity", async ({ page }) => {
+    await loginAs(page, USERS.admin.id);
+    await page.goto("/dashboard");
+    await sidebar(page).getByRole("link", { name: "Usage", exact: true }).click();
+    await expect(page).toHaveURL(/\/admin\/stats/);
+
+    await expect(page.getByTestId("downloads-chart")).toContainText("3 downloads");
+    await expect(page.getByTestId("storage-table").getByRole("row", { name: new RegExp(STATS_MIRROR) })).toContainText("3.0 MiB");
+    await expect(page.getByTestId("hit-rate-table").getByRole("row", { name: new RegExp(STATS_MIRROR) })).toContainText("50%");
+
+    await page.getByRole("combobox", { name: "Time range" }).click();
+    await page.getByRole("option", { name: "7 days" }).click();
+    await expect(page).toHaveURL(/days=7/);
+
+    await page.getByTestId("token-table").getByRole("link", { name: ADMIN_KEY.name }).click();
+    await expect(page).toHaveURL(new RegExp(`/keys/${ADMIN_KEY.id}/activity`));
+    await expect(page.getByText("Detailed activity is kept for 90 days.")).toBeVisible();
+    await expect(page.getByTestId("key-event").filter({ hasText: "/pull-seeded.proto" })).toBeVisible();
+  });
+
+  test("a maintainer cannot open the usage page but sees the activity of their own key only", async ({ page }) => {
+    await loginAs(page, USERS.maintainer.id);
+    await page.goto("/admin/stats");
+    await expect(page).not.toHaveURL(/\/admin\/stats/);
+    await expect(sidebar(page).getByRole("link", { name: "Usage", exact: true })).toHaveCount(0);
+
+    await page.goto("/keys");
+    await page.getByRole("row", { name: new RegExp(MAINTAINER_KEY.name) }).getByRole("link", { name: "Activity" }).click();
+    await expect(page.getByTestId("key-event").filter({ hasText: "/maintainer-pull.proto" })).toBeVisible();
+
+    await page.goto(`/keys/${ADMIN_KEY.id}/activity`);
+    await expect(page.getByText("Page not found")).toBeVisible();
+    await expect(page.getByTestId("key-event")).toHaveCount(0);
+  });
+
+  test("a repository's stats page shows its cache and a mirror without caching says so", async ({ page }) => {
+    await loginAs(page, USERS.viewer.id);
+    await page.goto(`/browse/${STATS_MIRROR}`);
+    await page.getByRole("link", { name: "Stats", exact: true }).click();
+    await expect(page).toHaveURL(`/browse/${STATS_MIRROR}/stats`);
+    await expect(page.getByRole("term").filter({ hasText: /^Cache$/ })).toBeVisible();
+    await expect(page.getByRole("definition").filter({ hasText: /^3\.0 MiB$/ })).toBeVisible();
+    await expect(page.getByRole("definition").filter({ hasText: /^50%$/ })).toBeVisible();
+
+    await page.goto("/browse/upstream-protos/stats");
+    await expect(page.getByText("Caching is off; nothing is stored for this mirror.")).toBeVisible();
   });
 });

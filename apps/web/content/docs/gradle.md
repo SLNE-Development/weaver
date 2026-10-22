@@ -1,11 +1,11 @@
 ---
 title: Gradle plugin
-description: Every option of the dev.protoloom plugin, covering repositories, publishing, snapshot repositories, local modules, environment variables and the configuration cache.
+description: Every option of the dev.slne.weaver plugin, covering repositories, publishing, snapshot repositories, local modules, environment variables and the configuration cache.
 section: Clients
 order: 1
 ---
 
-The Gradle plugin `dev.protoloom` publishes the `.proto` files of a project and fetches proto dependencies into `build/protoloom/protos/`. It is built and tested with Gradle 9 on Java 21, and supports the configuration cache.
+The Gradle plugin `dev.slne.weaver` publishes the `.proto` files of a project and fetches proto dependencies into `build/weaver/protos/`. It is built and tested with Gradle 9 on Java 21, and supports the configuration cache.
 
 ## Install
 
@@ -22,7 +22,7 @@ pluginManagement {
 
 ```kotlin title="build.gradle.kts"
 plugins {
-    id("dev.protoloom") version "0.1.0"
+    id("dev.slne.weaver") version "0.1.0"
 }
 ```
 
@@ -32,8 +32,8 @@ plugins {
 group = "dev.surf.economy"
 version = "1.4.0"
 
-protoloom {
-    // Defaults: the PROTOLOOM_URL and PROTOLOOM_TOKEN environment variables.
+weaver {
+    // Defaults: the WEAVER_URL and WEAVER_TOKEN environment variables.
     // url = "{{url}}"
     // token = providers.environmentVariable("MY_TOKEN")
 
@@ -50,24 +50,24 @@ protoloom {
 }
 
 dependencies {
-    protoloom("dev.surf.common:common-types:2.0.0")   // published artifact
-    protoloom(project(":shared-protos"))              // module of the same build
+    weaver("dev.surf.common:common-types:2.0.0")   // published artifact
+    weaver(project(":shared-protos"))              // module of the same build
 }
 ```
 
-## The `protoloom` block
+## The `weaver` block
 
 | Option | Type | Default | Used by |
 | --- | --- | --- | --- |
-| `url` | `Property<String>` | `PROTOLOOM_URL` environment variable | both tasks |
-| `token` | `Property<String>` | `PROTOLOOM_TOKEN` environment variable | both tasks |
+| `url` | `Property<String>` | `WEAVER_URL` environment variable | both tasks |
+| `token` | `Property<String>` | `WEAVER_TOKEN` environment variable | both tasks |
 | `repositories(vararg names)` | appends to `ListProperty<String>` | empty | `fetchProtos` |
 | `publishing { }` | see below | | `publishProtos` |
-| `protosDir` | `Provider<Directory>` (read only) | `build/protoloom/protos` | your build |
+| `protosDir` | `Provider<Directory>` (read only) | `build/weaver/protos` | your build |
 
-- `url` is the base URL of the server, for example `{{url}}`. Without it, both tasks fail with `No Protoloom server URL configured. Set the PROTOLOOM_URL environment variable or protoloom.url.`
+- `url` is the base URL of the server, for example `{{url}}`. Without it, both tasks fail with `No Weaver server URL configured. Set the WEAVER_URL environment variable or weaver.url.`
 - `token` is an API key, sent as `Authorization: Bearer <token>`. It is optional when you only read public repositories. It is never part of a task's inputs, so changing it doesn't invalidate anything.
-- `repositories` is the lookup order for dependencies. `fetchProtos` fails with `protoloom.repositories is empty` when you declared remote dependencies but no repository.
+- `repositories` is the lookup order for dependencies. Entries can be hosted, mirror or group repositories: `repositories("proto-all")` searches the members of the group `proto-all` in order. `fetchProtos` fails with `weaver.repositories is empty` when you declared remote dependencies but no repository.
 
 ## The `publishing` block
 
@@ -80,23 +80,23 @@ dependencies {
 | `version` | `Property<String>` | `project.version` (when set) |
 | `source` | `DirectoryProperty` | `src/main/proto` |
 
-A missing value fails the publish with `protoloom.publishing.<option> is not set.` A version ending in `-SNAPSHOT` goes to `snapshotRepository` when it is set, otherwise to `repository`.
+A missing value fails the publish with `weaver.publishing.<option> is not set.` A version ending in `-SNAPSHOT` goes to `snapshotRepository` when it is set, otherwise to `repository`.
 
 Only files matching `**/*.proto` under `source` are packed. Their path relative to `source` is their import path.
 
 ## Dependencies
 
-Declare dependencies in the `protoloom` configuration:
+Declare dependencies in the `weaver` configuration:
 
 ```kotlin
 dependencies {
-    protoloom("dev.surf.common:common-types:2.0.0")
-    protoloom("dev.surf.common:common-types:2.1.0-SNAPSHOT")
-    protoloom(project(":shared-protos"))
+    weaver("dev.surf.common:common-types:2.0.0")
+    weaver("dev.surf.common:common-types:2.1.0-SNAPSHOT")
+    weaver(project(":shared-protos"))
 }
 ```
 
-A remote dependency needs a group, a name and an exact version. Without a version the build fails with `protoloom dependency … needs a version.` Gradle-style ranges and `+` are not supported; the server rejects them as invalid coordinates.
+A remote dependency needs a group, a name and an exact version. Without a version the build fails with `weaver dependency … needs a version.` Gradle-style ranges and `+` are not supported; the server rejects them as invalid coordinates.
 
 The same list is used twice: `fetchProtos` downloads it, and `publishProtos` writes it into the published artifact as its declared dependencies.
 
@@ -104,23 +104,23 @@ The same list is used twice: `fetchProtos` downloads it, and `publishProtos` wri
 
 | Task | What it does |
 | --- | --- |
-| `fetchProtos` | Resolves the dependencies on the server and writes all files into `build/protoloom/protos/`. |
+| `fetchProtos` | Resolves the dependencies on the server and writes all files into `build/weaver/protos/`. |
 | `publishProtos` | Packs `source` with `packProtos` and uploads it with its dependencies. |
-| `packProtos` | Builds `build/protoloom/publish/protos.tar.gz`, reproducibly (fixed order, no timestamps). |
+| `packProtos` | Builds `build/weaver/publish/protos.tar.gz`, reproducibly (fixed order, no timestamps). |
 
 ### `fetchProtos`
 
 - Always runs. It is never up to date, because a snapshot may have a new build.
-- Archives are cached by checksum in `~/.gradle/caches/protoloom/` (under your Gradle user home). A release downloads once; a cached archive is reused across projects.
+- Archives are cached by checksum in `~/.gradle/caches/weaver/` (under your Gradle user home). A release downloads once; a cached archive is reused across projects.
 - Every download is checked against the SHA-256 from the server. A mismatch fails the build.
 - The output folder is synchronised: files that are no longer part of the tree are removed.
 - Version conflicts are logged, and two sources with the same file path fail the build. See [Dependencies and resolution](/docs/resolution).
 
-Use the output through `protoloom.protosDir`. It carries the task dependency, so anything that reads it runs after `fetchProtos`:
+Use the output through `weaver.protosDir`. It carries the task dependency, so anything that reads it runs after `fetchProtos`:
 
 ```kotlin
 tasks.named("generateContracts") {
-    inputs.dir(protoloom.protosDir)
+    inputs.dir(weaver.protosDir)
 }
 ```
 
@@ -140,13 +140,13 @@ In a multi-module build, a module can use the protos of another module directly:
 
 ```kotlin title="app/build.gradle.kts"
 dependencies {
-    protoloom(project(":shared-protos"))
+    weaver(project(":shared-protos"))
 }
 ```
 
-- `:shared-protos` must apply `dev.protoloom` too.
-- Its `source` files are copied into this module's `build/protoloom/protos/` as they are. Changes are picked up on the next build, without publishing.
-- Its own `protoloom` dependencies are fetched as well, in the same request as this module's.
+- `:shared-protos` must apply `dev.slne.weaver` too.
+- Its `source` files are copied into this module's `build/weaver/protos/` as they are. Changes are picked up on the next build, without publishing.
+- Its own `weaver` dependencies are fetched as well, in the same request as this module's.
 - If `:shared-protos` has a `publishing` block, its `group:name` stands in for the remote artifact with that `group:name`. The remote artifact is never downloaded, and nor are the dependencies it alone brings in. Run with `--info` to see `Using project :shared-protos instead of …`.
 - Two local modules can't publish the same `group:name`; the build fails and names both.
 - A file path in both a local module and a remote artifact fails the fetch, like two remote artifacts would.
@@ -157,24 +157,24 @@ When you publish a module that depends on a local module, the dependency is writ
 
 | Variable | Meaning |
 | --- | --- |
-| `PROTOLOOM_URL` | Default for `protoloom.url`. |
-| `PROTOLOOM_TOKEN` | Default for `protoloom.token`. |
+| `WEAVER_URL` | Default for `weaver.url`. |
+| `WEAVER_TOKEN` | Default for `weaver.token`. |
 
 Set them in your shell, or as CI secrets:
 
 ```yaml title=".github/workflows/protos.yml"
 - run: ./gradlew publishProtos
   env:
-    PROTOLOOM_URL: {{url}}
-    PROTOLOOM_TOKEN: ${{ secrets.PROTOLOOM_TOKEN }}
+    WEAVER_URL: {{url}}
+    WEAVER_TOKEN: ${{ secrets.WEAVER_TOKEN }}
 ```
 
 To read them from somewhere else, set the properties yourself:
 
 ```kotlin
-protoloom {
-    url = providers.gradleProperty("protoloomUrl")
-    token = providers.environmentVariable("CI_PROTOLOOM_KEY")
+weaver {
+    url = providers.gradleProperty("weaverUrl")
+    token = providers.environmentVariable("CI_WEAVER_KEY")
 }
 ```
 

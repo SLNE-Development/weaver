@@ -1,5 +1,5 @@
 name: Bug report
-description: Something in Protoloom doesn't work as expected
+description: Something in Weaver doesn't work as expected
 labels: [bug]
 body:
   - type: textarea

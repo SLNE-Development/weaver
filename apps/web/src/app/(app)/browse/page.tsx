@@ -1,16 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { BoxesIcon } from "lucide-react";
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@protoloom/ui/components/empty";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@protoloom/ui/components/table";
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@weaver/ui/components/empty";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@weaver/ui/components/table";
 import { PageContainer, PageHeader, Panel, RelativeTime, VisibilityBadge } from "@/components/browse-ui";
 import { repositoryHref } from "@/lib/browse";
 import { requirePageAccess } from "@/server/session";
 import { api } from "@/trpc/server";
+import { FormatBadge } from "../repositories/_components/format-badge";
 
 export const metadata: Metadata = { title: "Browse" };
 
-/** Every repository the visitor may browse, with its artifact and version counts. */
+/** Every repository the visitor may browse, with its format and (proto) artifact and version counts. */
 export default async function BrowsePage() {
   await requirePageAccess("/browse");
   const repositories = await api.browse.repositories();
@@ -52,12 +53,14 @@ export default async function BrowsePage() {
                       <Link href={repositoryHref(repo.name)} className="font-mono text-[13px] font-medium hover:underline">
                         {repo.name}
                       </Link>
+                      <FormatBadge format={repo.format} />
                       <VisibilityBadge visibility={repo.visibility} />
                     </div>
                   </TableCell>
                   <TableCell className="hidden max-w-80 truncate text-muted-foreground md:table-cell">{repo.description ?? "—"}</TableCell>
-                  <TableCell className="text-right font-mono tabular-nums">{repo.artifactCount}</TableCell>
-                  <TableCell className="text-right font-mono tabular-nums">{repo.versionCount}</TableCell>
+                  {/* Artifact and version counts exist for proto repositories only. */}
+                  <TableCell className="text-right font-mono tabular-nums">{repo.format === "proto" ? repo.artifactCount : "—"}</TableCell>
+                  <TableCell className="text-right font-mono tabular-nums">{repo.format === "proto" ? repo.versionCount : "—"}</TableCell>
                   <TableCell className="hidden pr-4 text-right text-xs text-muted-foreground sm:table-cell">
                     <RelativeTime date={repo.createdAt} />
                   </TableCell>

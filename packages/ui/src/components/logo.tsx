@@ -1,6 +1,6 @@
-import { cn } from "@protoloom/ui/lib/utils"
+import { cn } from "@weaver/ui/lib/utils"
 
-/** The Protoloom woven-threads icon; `tile` is the square, `thread` the strokes. Mirrors src/assets/protoloom-icon*.svg. */
+/** The Weaver woven-threads icon; `tile` is the square, `thread` the strokes. Mirrors src/assets/weaver-icon*.svg. */
 function LogoIcon({
   tile,
   thread,
@@ -42,7 +42,7 @@ function LogoIcon({
 }
 
 /**
- * Protoloom brand mark. Shows the black tile in light mode and the inverted
+ * Weaver brand mark. Shows the black tile in light mode and the inverted
  * (white) tile in dark mode. `variant="full"` adds the wordmark next to the icon.
  */
 function Logo({
@@ -56,14 +56,14 @@ function Logo({
     <span
       data-slot="logo"
       role="img"
-      aria-label="Protoloom"
+      aria-label="Weaver"
       className={cn("inline-flex items-center gap-2", className)}
     >
       <LogoIcon tile="#000000" thread="#ffffff" className="dark:hidden" />
       <LogoIcon tile="#ffffff" thread="#000000" className="hidden dark:block" />
       {variant === "full" && (
         <span aria-hidden="true" className="text-base font-semibold tracking-tight">
-          Protoloom
+          Weaver
         </span>
       )}
     </span>

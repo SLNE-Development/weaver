@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import { Badge } from "@protoloom/ui/components/badge";
-import { cn } from "@protoloom/ui/lib/utils";
+import { Badge } from "@weaver/ui/components/badge";
+import { cn } from "@weaver/ui/lib/utils";
 
 /** Centred page column with the landing gutters (16px on phones, 40px from lg). */
 export function Container({ className, children }: { className?: string; children: ReactNode }) {

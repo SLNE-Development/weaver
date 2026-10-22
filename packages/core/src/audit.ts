@@ -1,4 +1,4 @@
-import { auditEvent, type Tx } from "@protoloom/db";
+import { auditEvent, type Tx } from "@weaver/db";
 import type { Principal } from "./permissions.js";
 
 /** One audit log entry; `actor` is the acting principal, or `"system"` for scheduled jobs. */

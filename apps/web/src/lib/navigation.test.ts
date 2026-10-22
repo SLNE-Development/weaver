@@ -14,6 +14,11 @@ describe("navItemsFor", () => {
     expect(titles("maintainer")).toEqual(expected);
   });
 
+  it("shows the Usage page to admins only", () => {
+    expect(navItemsFor("admin").map((item) => item.id)).toContain("usage");
+    expect(navItemsFor("maintainer").map((item) => item.id)).not.toContain("usage");
+  });
+
   it("links the dashboard at /dashboard", () => {
     expect(navItemsFor(null)[0]?.href).toBe("/dashboard");
   });
@@ -27,11 +32,13 @@ describe("navItemsFor", () => {
       "API keys",
       "Users",
       "Settings",
+      "Usage",
       "Audit log",
     ]);
     expect(items.filter((item) => item.section === "admin").map((item) => item.href)).toEqual([
       "/admin/users",
       "/admin/settings",
+      "/admin/stats",
       "/admin/audit",
     ]);
   });

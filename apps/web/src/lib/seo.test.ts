@@ -24,8 +24,8 @@ describe("defaultMetadata", () => {
   it("sets the base URL, the title template and the share defaults", () => {
     const meta = defaultMetadata();
     expect(meta.metadataBase?.toString()).toBe("http://localhost:3000/");
-    expect(meta.title).toEqual({ default: "Protoloom", template: "%s · Protoloom" });
-    expect(meta.openGraph).toMatchObject({ siteName: "Protoloom", type: "website" });
+    expect(meta.title).toEqual({ default: "Weaver", template: "%s · Weaver" });
+    expect(meta.openGraph).toMatchObject({ siteName: "Weaver", type: "website" });
     expect(meta.twitter).toMatchObject({ card: "summary_large_image" });
   });
 });
@@ -40,7 +40,7 @@ describe("pageMetadata", () => {
     expect(meta.openGraph).toMatchObject({
       type: "website",
       url: "http://localhost:3000/docs/gradle",
-      siteName: "Protoloom",
+      siteName: "Weaver",
       title: "Gradle plugin",
       description: "Configure the plugin.",
     });
@@ -77,7 +77,7 @@ describe("pageMetadata", () => {
   });
 
   it("can opt out of the title template", () => {
-    const meta = pageMetadata({ title: "Protoloom · registry", absoluteTitle: true, description: "d", path: "/" });
-    expect(meta.title).toEqual({ absolute: "Protoloom · registry" });
+    const meta = pageMetadata({ title: "Weaver · registry", absoluteTitle: true, description: "d", path: "/" });
+    expect(meta.title).toEqual({ absolute: "Weaver · registry" });
   });
 });

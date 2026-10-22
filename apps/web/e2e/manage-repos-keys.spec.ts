@@ -21,7 +21,7 @@ async function trpcMutation<T>(page: Page, path: string, input: unknown): Promis
 }
 
 async function createRepository(page: Page, name: string): Promise<void> {
-  await trpcMutation(page, "repositories.create", { name, visibility: "private" });
+  await trpcMutation(page, "repositories.create", { name, format: "proto", kind: "hosted", visibility: "private" });
 }
 
 /** Picks `option` in the Radix select whose trigger has the accessible name `trigger`, inside `scope`. */
@@ -30,29 +30,111 @@ async function choose(page: Page, scope: Locator, trigger: string, option: strin
   await page.getByRole("option", { name: option, exact: true }).click();
 }
 
-test("an admin creates a private repository and lands on its settings", async ({ page }) => {
+test("an admin creates a proto repository in the dialog and lands on its settings", async ({ page }) => {
   const name = uniqueName("ui");
   await loginAs(page, USERS.admin.id);
   await page.goto("/repositories");
-  await page.getByRole("link", { name: "New repository" }).first().click();
-  await expect(page).toHaveURL("/repositories/new");
+  await page.getByRole("button", { name: "New repository" }).first().click();
+  const dialog = page.getByRole("dialog", { name: "New repository" });
 
   // Client-side validation of the name.
-  await page.getByLabel("Name", { exact: true }).fill("Team Private");
-  await page.getByRole("button", { name: "Create repository" }).click();
-  await expect(page.getByText("Use lowercase letters, digits and dashes")).toBeVisible();
+  await dialog.getByLabel("Name", { exact: true }).fill("Team Private");
+  await dialog.getByRole("button", { name: "Create repository" }).click();
+  await expect(dialog.getByText("Use lowercase letters, digits and dashes")).toBeVisible();
 
-  await page.getByLabel("Name", { exact: true }).fill(name);
-  await page.getByLabel("Description").fill("Protos only the team can see");
-  await page.getByRole("radio", { name: "Private" }).check();
-  await page.getByRole("button", { name: "Create repository" }).click();
+  await dialog.getByLabel("Name", { exact: true }).fill(name);
+  await choose(page, dialog, "Format", "Proto");
+  await expect(dialog.getByRole("radio", { name: "Hosted" })).toBeChecked();
+  await dialog.getByRole("button", { name: "Create repository" }).click();
 
   await expect(page).toHaveURL(`/repositories/${name}/settings`);
   await expect(page.getByText("Lower wins.")).toBeVisible();
+  // Only proto settings apply to a proto repository: no mirror or group sections.
+  await expect(page.getByRole("region", { name: "Mirror" })).toHaveCount(0);
+
+  const general = page.getByRole("region", { name: "General" });
+  await general.getByLabel("Description").fill("Protos only the team can see");
+  await general.getByRole("button", { name: "Save changes" }).click();
+  await expect(page.getByText("Settings saved")).toBeVisible();
+
   await page.goto("/repositories");
   const row = page.getByTestId(`repository-${name}`);
   await expect(row).toContainText("private");
+  await expect(row).toContainText("Proto");
+  await expect(row).toContainText("Hosted");
   await expect(row).toContainText("Protos only the team can see");
+});
+
+test("an admin creates an npm mirror with one upstream and turns caching on", async ({ page }) => {
+  const name = uniqueName("npm");
+  await loginAs(page, USERS.admin.id);
+  await page.goto("/repositories?create=1");
+  const dialog = page.getByRole("dialog", { name: "New repository" });
+  await dialog.getByLabel("Name", { exact: true }).fill(name);
+  await choose(page, dialog, "Format", "npm");
+  await dialog.getByRole("radio", { name: "Mirror" }).click();
+  await dialog.getByRole("button", { name: "Create repository" }).click();
+  await expect(dialog.getByText("Enter an http or https URL")).toBeVisible();
+  await dialog.getByLabel("Upstream URL").fill("https://registry.npmjs.org");
+  await dialog.getByRole("button", { name: "Create repository" }).click();
+
+  await expect(page).toHaveURL(`/repositories/${name}/settings`);
+  const mirror = page.getByRole("region", { name: "Mirror" });
+  await expect(mirror.getByLabel("Upstream 1 URL")).toHaveValue("https://registry.npmjs.org");
+  await expect(mirror.getByTestId("cache-status")).toHaveText("Caching off");
+  await expect(mirror.getByLabel("Metadata TTL (seconds)")).toHaveCount(0);
+  // Hosted proto settings don't apply to a mirror.
+  await expect(page.getByText("Lower wins.")).toHaveCount(0);
+
+  await mirror.getByRole("switch", { name: "Cache upstream content" }).click();
+  await expect(mirror.getByTestId("cache-status")).toHaveText("Caching on");
+  await expect(mirror.getByLabel("Metadata TTL (seconds)")).toHaveValue("1800");
+  await mirror.getByRole("button", { name: "Save changes" }).click();
+  await expect(page.getByText("Settings saved")).toBeVisible();
+
+  await page.reload();
+  await expect(page.getByRole("region", { name: "Mirror" }).getByTestId("cache-status")).toHaveText("Caching on");
+
+  // A stored token is only kept while the upstream stays the same.
+  await choose(page, mirror, "Upstream 1 auth", "Bearer token");
+  await mirror.getByLabel("Token").fill("npm_secret_token");
+  await mirror.getByRole("button", { name: "Save changes" }).click();
+  await expect(page.getByText("Settings saved").first()).toBeVisible();
+  await page.reload();
+  const hint = mirror.getByText("Leave empty to keep the stored secret");
+  await expect(hint).toBeVisible();
+  await expect(mirror.getByLabel("Token")).toHaveAttribute("placeholder", "stored");
+  await mirror.getByLabel("Upstream 1 URL").fill("https://registry.example.com/npm");
+  await expect(hint).toBeHidden();
+  await expect(mirror.getByLabel("Token")).toHaveAttribute("placeholder", "");
+  await mirror.getByRole("button", { name: "Save changes" }).click();
+  await expect(mirror.getByText("Bearer auth needs a token")).toBeVisible();
+  await page.goto("/repositories");
+  await expect(page.getByTestId(`repository-${name}`)).toContainText("Mirror");
+});
+
+test("an admin creates an npm group from hosted members and reorders them", async ({ page }) => {
+  const [first, second, group] = [uniqueName("npm-a"), uniqueName("npm-b"), uniqueName("npm-all")];
+  await loginAs(page, USERS.admin.id);
+  for (const name of [first, second]) await trpcMutation(page, "repositories.create", { name, format: "npm", kind: "hosted" });
+
+  await page.goto("/repositories?create=1");
+  const dialog = page.getByRole("dialog", { name: "New repository" });
+  await dialog.getByLabel("Name", { exact: true }).fill(group);
+  await choose(page, dialog, "Format", "npm");
+  await dialog.getByRole("radio", { name: "Group" }).click();
+  await dialog.getByRole("checkbox", { name: first }).check();
+  await dialog.getByRole("checkbox", { name: second }).check();
+  await dialog.getByRole("button", { name: "Create repository" }).click();
+
+  await expect(page).toHaveURL(`/repositories/${group}/settings`);
+  const members = page.getByRole("region", { name: "Members" });
+  await expect(members.getByTestId("member-row")).toHaveText([new RegExp(first), new RegExp(second)]);
+  await members.getByRole("button", { name: `Move ${second} up` }).click();
+  await members.getByRole("button", { name: "Save changes" }).click();
+  await expect(page.getByText("Settings saved")).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole("region", { name: "Members" }).getByTestId("member-row")).toHaveText([new RegExp(second), new RegExp(first)]);
 });
 
 test("repository settings save and keep unsaved edits while policies change", async ({ page }) => {
@@ -61,8 +143,9 @@ test("repository settings save and keep unsaved edits while policies change", as
   await createRepository(page, name);
   await page.goto(`/repositories/${name}/settings`);
 
-  await page.getByLabel("Resolution priority").fill("10");
-  await page.getByRole("button", { name: "Save changes" }).click();
+  const proto = page.getByRole("region", { name: "Proto options" });
+  await proto.getByLabel("Resolution priority").fill("10");
+  await proto.getByRole("button", { name: "Save changes" }).click();
   await expect(page.getByText("Settings saved")).toBeVisible();
   await page.reload();
   await expect(page.getByLabel("Resolution priority")).toHaveValue("10");
@@ -129,6 +212,54 @@ test("a cleanup policy can be added, edited, toggled, previewed and run", async 
   await expect(page.getByRole("button", { name: "Run now" })).toBeEnabled();
 });
 
+test("a docker hosted repository offers only the docker cleanup kinds", async ({ page }) => {
+  const name = uniqueName("images");
+  await loginAs(page, USERS.admin.id);
+  await trpcMutation(page, "repositories.create", { name, format: "docker", kind: "hosted" });
+  await page.goto(`/repositories/${name}/settings`);
+
+  await page.getByRole("button", { name: "Add policy" }).click();
+  const add = page.getByRole("dialog", { name: "Add cleanup policy" });
+  await expect(add.getByRole("radio")).toHaveCount(3);
+  await expect(add.getByRole("radio", { name: "Delete untagged manifests" })).toBeVisible();
+  await expect(add.getByRole("radio", { name: "Keep last N tags" })).toBeVisible();
+  await expect(add.getByRole("radio", { name: "Delete tags not pulled" })).toBeVisible();
+  await expect(add.getByLabel("Image prefix")).toBeVisible();
+
+  // The tag pattern belongs to "Keep last N tags" only; "Include releases" never applies to docker.
+  await expect(add.getByLabel("Tag pattern")).toHaveCount(0);
+  await add.getByRole("radio", { name: "Delete tags not pulled" }).click();
+  await expect(add.getByLabel("Tag pattern")).toHaveCount(0);
+  await expect(add.getByRole("checkbox", { name: "Include releases" })).toHaveCount(0);
+  await add.getByRole("radio", { name: "Keep last N tags" }).click();
+  await expect(add.getByLabel("Tag pattern")).toBeVisible();
+  await expect(add.getByRole("checkbox", { name: "Include releases" })).toHaveCount(0);
+
+  await add.getByLabel("Tags to keep").fill("5");
+  await add.getByRole("button", { name: "Add policy" }).click();
+  await expect(add.getByText("Enter a tag pattern")).toBeVisible();
+  await add.getByLabel("Tag pattern").fill("v*");
+  await add.getByRole("button", { name: "Add policy" }).click();
+  await expect(add).toBeHidden();
+  await expect(page.getByRole("cell", { name: /Keep the last 5 tags matching v\*/ })).toBeVisible();
+});
+
+test("a mirror repository has no cleanup policies", async ({ page }) => {
+  const name = uniqueName("mirror");
+  await loginAs(page, USERS.admin.id);
+  await trpcMutation(page, "repositories.create", {
+    name,
+    format: "npm",
+    kind: "mirror",
+    upstreams: [{ url: "https://registry.npmjs.org", authType: "none" }],
+  });
+  await page.goto(`/repositories/${name}/settings`);
+  await expect(page.getByRole("region", { name: "Mirror" })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Cleanup policies" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Add policy" })).toHaveCount(0);
+  await expect(page.getByText("Mirror caches are cleaned up by the eviction settings above.")).toBeVisible();
+});
+
 test("an admin creates a key whose secret is shown exactly once", async ({ page }) => {
   const repo = uniqueName("keys");
   const keyName = uniqueName("ci").slice(0, 32);
@@ -166,6 +297,30 @@ test("an admin creates a key whose secret is shown exactly once", async ({ page 
   await page.reload();
   await expect(page.getByTestId("api-key-row").filter({ hasText: keyName })).toBeVisible();
   expect(await page.content()).not.toContain(value);
+});
+
+test("a long repository name stays inside its permission picker", async ({ page }) => {
+  // 63 characters, the longest name a repository may have.
+  const repo = uniqueName("a-very-long-repository-name-for-the-picker").padEnd(63, "x").slice(0, 63);
+  await loginAs(page, USERS.admin.id);
+  await createRepository(page, repo);
+  await page.goto("/keys");
+  await page.getByRole("button", { name: "Create key" }).first().click();
+  const dialog = page.getByRole("dialog", { name: "Create API key" });
+  const row = dialog.getByTestId("permission-row").first();
+  await choose(page, row, "Repository", repo);
+
+  const trigger = row.getByRole("combobox", { name: "Repository" });
+  const prefix = row.getByLabel("Group prefix");
+  const [triggerBox, prefixBox] = [(await trigger.boundingBox())!, (await prefix.boundingBox())!];
+  expect(triggerBox.x + triggerBox.width).toBeLessThanOrEqual(prefixBox.x);
+  // The name is cut off inside the trigger instead of painting past its edge.
+  const overflow = await trigger.evaluate((el) => {
+    const right = el.getBoundingClientRect().right;
+    return [...el.querySelectorAll("*")].some((child) => child.getBoundingClientRect().right > right + 0.5);
+  });
+  expect(overflow).toBe(false);
+  await dialog.screenshot({ path: ".e2e/results/long-repo-picker.png" });
 });
 
 test("an admin revokes a key after confirming", async ({ page }) => {

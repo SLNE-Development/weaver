@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-// The CLI's own schema, so the snippet can't drift from what `protoloom fetch` accepts.
+// The CLI's own schema, so the snippet can't drift from what `weaver fetch` accepts.
 import { configSchema } from "../../../../packages/cli/src/config";
 import {
   GENERIC_SHARE_IMAGE,
@@ -9,10 +9,11 @@ import {
   listingMetadataInput,
   buildFileTree,
   firstFile,
+  filterArtifacts,
   formatBytes,
   formatRelative,
   gradleSnippet,
-  protoloomJsonSnippet,
+  weaverJsonSnippet,
   repositoryHref,
 } from "./browse";
 
@@ -43,11 +44,21 @@ describe("usage snippets", () => {
     const snippet = gradleSnippet(input);
     expect(snippet).toContain('url = "https://protos.example.com"');
     expect(snippet).toContain('repositories("releases")');
-    expect(snippet).toContain('protoloom("dev.example:demo:1.0.0")');
+    expect(snippet).toContain('weaver("dev.example:demo:1.0.0")');
   });
 
-  it("writes a protoloom.json the CLI accepts", () => {
-    const parsed = configSchema.safeParse(JSON.parse(protoloomJsonSnippet(input)));
+  it("gradleSnippet for a group repository lists the group name", () => {
+    const snippet = gradleSnippet({ url: "https://protos.example.com", repository: "all" });
+    expect(snippet).toContain('repositories("all")');
+    // Without a coordinate the dependency is only a commented template.
+    expect(snippet).toContain('// weaver("group:name:version")');
+    const parsed = configSchema.safeParse(JSON.parse(weaverJsonSnippet({ url: "https://protos.example.com", repository: "all" })));
+    expect(parsed.success).toBe(true);
+    expect(parsed.data).toMatchObject({ repositories: ["all"], dependencies: [] });
+  });
+
+  it("writes a weaver.json the CLI accepts", () => {
+    const parsed = configSchema.safeParse(JSON.parse(weaverJsonSnippet(input)));
     expect(parsed.success).toBe(true);
     expect(parsed.data).toEqual({
       url: "https://protos.example.com",
@@ -91,6 +102,8 @@ describe("formatting", () => {
     expect(formatBytes(512)).toBe("512 B");
     expect(formatBytes(2048)).toBe("2.0 KiB");
     expect(formatBytes(5 * 1024 * 1024)).toBe("5.0 MiB");
+    expect(formatBytes(3 * 1024 ** 3)).toBe("3.0 GiB");
+    expect(formatBytes(2 * 1024 ** 4)).toBe("2.0 TiB");
   });
 
   it("formats relative times", () => {
@@ -151,5 +164,24 @@ describe("listingMetadataInput", () => {
       expect(meta.description).not.toContain("secret");
       expect(meta.description).not.toContain("Top");
     }
+  });
+});
+
+describe("filterArtifacts", () => {
+  const artifacts = [
+    { group: "acme", name: "money" },
+    { group: "acme", name: "order" },
+    { group: "corp.secret", name: "vault" },
+  ];
+
+  it("matches group, name and group:name case-insensitively", () => {
+    expect(filterArtifacts(artifacts, "MONEY").map((a) => a.name)).toEqual(["money"]);
+    expect(filterArtifacts(artifacts, "acme:ord").map((a) => a.name)).toEqual(["order"]);
+    expect(filterArtifacts(artifacts, "corp.SEC").map((a) => a.name)).toEqual(["vault"]);
+    expect(filterArtifacts(artifacts, "nothing")).toEqual([]);
+  });
+
+  it("returns everything for an empty or blank filter", () => {
+    expect(filterArtifacts(artifacts, "  ")).toBe(artifacts);
   });
 });

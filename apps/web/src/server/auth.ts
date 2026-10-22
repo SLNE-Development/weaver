@@ -4,7 +4,7 @@ import { admin } from "better-auth/plugins/admin";
 import { adminAc, userAc } from "better-auth/plugins/admin/access";
 import { apiKey } from "@better-auth/api-key";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
-import { account, apikey, session, user, verification, type Db } from "@protoloom/db";
+import { account, apikey, session, user, verification, type Db } from "@weaver/db";
 import { env, type Env } from "../env";
 import { accountAuditHooks } from "./account-audit";
 import { isSecureUrl } from "./invite";
@@ -96,7 +96,7 @@ function endpointPaths(...plugins: { endpoints?: Record<string, { path?: string 
 }
 
 /**
- * Better Auth options for Protoloom: OAuth only (GitHub, Discord), no email/password, roles
+ * Better Auth options for Weaver: OAuth only (GitHub, Discord), no email/password, roles
  * `admin | maintainer | viewer` through the admin plugin, API keys without rate limiting (Gradle
  * builds must not be throttled), user creation behind the invite / first-admin gate, and account
  * linking only explicitly through `linkSocial` while signed in. The admin and api-key plugin

@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
   - name: Security vulnerability
-    url: https://github.com/SLNE-Development/protoloom/security/advisories/new
+    url: https://github.com/SLNE-Development/weaver/security/advisories/new
     about: Please report security problems privately.
   - name: Documentation
-    url: https://protoloom.slne.dev/docs
+    url: https://weaver.slne.dev/docs
     about: Setup guides for the Gradle plugin, CLI and self-hosting.

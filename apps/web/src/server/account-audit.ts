@@ -1,7 +1,7 @@
 import { count, eq } from "drizzle-orm";
 import type { BetterAuthOptions } from "better-auth";
-import { recordAudit } from "@protoloom/core";
-import { account, user, type Db } from "@protoloom/db";
+import { recordAudit } from "@weaver/core";
+import { account, user, type Db } from "@weaver/db";
 import { effectiveRole } from "./roles";
 
 type AccountHooks = NonNullable<NonNullable<BetterAuthOptions["databaseHooks"]>["account"]>;

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@protoloom/ui/components/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@weaver/ui/components/tabs";
 import { InvitesPanel } from "./invites-panel";
 import { UsersTable } from "./users-table";
 

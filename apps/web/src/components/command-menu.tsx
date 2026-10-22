@@ -13,7 +13,7 @@ import {
   SunIcon,
   UserIcon,
 } from "lucide-react";
-import type { Role } from "@protoloom/core";
+import type { Role } from "@weaver/core";
 import {
   CommandDialog,
   CommandEmpty,
@@ -22,31 +22,31 @@ import {
   CommandItem,
   CommandList,
   CommandSeparator,
-} from "@protoloom/ui/components/command";
+} from "@weaver/ui/components/command";
 import { navItemsFor } from "@/lib/navigation";
 import { useCommandMenu } from "./command-actions";
 import { NAV_ICONS } from "./nav-icons";
 import { useSignOut } from "./use-sign-out";
 
-/** Props of the slot that renders live artifact results for the typed query. */
-export interface ArtifactSearchProps {
+/** Props of the slot that renders live package results for the typed query. */
+export interface PackageSearchProps {
   query: string;
   /** Closes the dialog and opens `href`. */
   onNavigate: (href: string) => void;
 }
 
 /**
- * The Ctrl+K / Cmd+K command dialog of every app page. Groups: Artifacts (from the
- * `artifactSearch` slot), Go to (nav filtered by role), Actions (built-ins, page actions from
+ * The Ctrl+K / Cmd+K command dialog of every app page. Groups: Packages (from the
+ * `packageSearch` slot), Go to (nav filtered by role), Actions (built-ins, page actions from
  * `useCommandActions`, theme), Account.
  */
 export function CommandMenu({
   role,
-  artifactSearch: ArtifactSearch,
+  packageSearch: PackageSearch,
 }: {
   /** The viewer's role, `null` when anonymous. */
   role: Role | null;
-  artifactSearch?: ComponentType<ArtifactSearchProps>;
+  packageSearch?: ComponentType<PackageSearchProps>;
 }) {
   const { open, setOpen, toggle, actions } = useCommandMenu();
   const [query, setQuery] = useState("");
@@ -78,11 +78,11 @@ export function CommandMenu({
   const navigate = (href: string) => run(() => router.push(href));
 
   return (
-    <CommandDialog open={open} onOpenChange={onOpenChange} title="Command menu" description="Search artifacts, pages and actions">
-      <CommandInput placeholder="Search artifacts, pages, actions…" value={query} onValueChange={setQuery} />
+    <CommandDialog open={open} onOpenChange={onOpenChange} title="Command menu" description="Search packages, pages and actions">
+      <CommandInput placeholder="Search packages, pages, actions…" value={query} onValueChange={setQuery} />
       <CommandList>
         <CommandEmpty>No results.</CommandEmpty>
-        {ArtifactSearch && <ArtifactSearch query={query} onNavigate={navigate} />}
+        {PackageSearch && <PackageSearch query={query} onNavigate={navigate} />}
         <CommandGroup heading="Go to">
           {navItemsFor(role).map((item) => {
             const Icon = NAV_ICONS[item.id];
@@ -103,7 +103,7 @@ export function CommandMenu({
             </CommandItem>
           )}
           {role === "admin" && (
-            <CommandItem value="Create repository" onSelect={() => navigate("/repositories/new")}>
+            <CommandItem value="Create repository" onSelect={() => navigate("/repositories?create=1")}>
               <PlusIcon />
               Create repository
             </CommandItem>

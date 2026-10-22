@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { and, eq, inArray, max, sql } from "drizzle-orm";
 import { z } from "zod";
-import { artifact, build, buildFile, deletedRelease, dependency, version } from "@protoloom/db";
+import { component, protoArtifact, protoBuild, protoBuildFile, protoDeletedRelease, protoDependency, protoVersion } from "@weaver/db";
 import { recordAudit } from "../audit.js";
 import { extractArchive, sha256 } from "../archive.js";
 import {
@@ -15,18 +15,21 @@ import {
 } from "../coordinates.js";
 import { RegistryError } from "../errors.js";
 import { canAccess, type Principal } from "../permissions.js";
+import type { Repo } from "../repos/service.js";
 import { findPathCollisions, resolveGraph, type Resolution } from "../resolution.js";
+import { putBuffer } from "../storage/index.js";
 import {
   createLookup,
   deleteBlobLogged,
   findLatestBuild,
   loadFiles,
-  publishRepositoryOrder,
+  hostedProtoConfig,
+  publishSources,
   versionLockKey,
+  type BlobRef,
   type BuildRow,
   type Queryable,
   type RegistryContext,
-  type RepositoryRow,
 } from "./lookup.js";
 import { assertNoDependents, findDependents, readableRepository, type Dependent } from "./read.js";
 
@@ -97,10 +100,10 @@ function parseManifest(input: unknown): Manifest {
 /** Matches the tombstone of a deleted release `c` in the repository `repositoryId`. */
 function tombstoneOf(repositoryId: string, c: Coordinate) {
   return and(
-    eq(deletedRelease.repositoryId, repositoryId),
-    eq(deletedRelease.group, c.group),
-    eq(deletedRelease.name, c.name),
-    eq(deletedRelease.version, c.version),
+    eq(protoDeletedRelease.repositoryId, repositoryId),
+    eq(protoDeletedRelease.group, c.group),
+    eq(protoDeletedRelease.name, c.name),
+    eq(protoDeletedRelease.version, c.version),
   );
 }
 
@@ -114,7 +117,7 @@ function tombstoneOf(repositoryId: string, c: Coordinate) {
 async function checkExistingRelease(
   db: Queryable,
   p: Principal,
-  repo: RepositoryRow,
+  repo: Repo,
   c: Coordinate,
   digest: string,
   force: boolean | undefined,
@@ -123,10 +126,10 @@ async function checkExistingRelease(
   if (isSnapshot(c.version)) return none;
   const existing = await findLatestBuild(db, repo.id, c);
   if (!existing) {
-    if (!repo.allowRedeploy) {
+    if (!hostedProtoConfig(repo).allowRedeploy) {
       const [tombstone] = await db
-        .select({ sha256: deletedRelease.sha256 })
-        .from(deletedRelease)
+        .select({ sha256: protoDeletedRelease.sha256 })
+        .from(protoDeletedRelease)
         .where(tombstoneOf(repo.id, c));
       if (tombstone && tombstone.sha256 !== digest) {
         throw new RegistryError(
@@ -137,7 +140,7 @@ async function checkExistingRelease(
     }
     return none;
   }
-  if (!repo.allowRedeploy) {
+  if (!hostedProtoConfig(repo).allowRedeploy) {
     throw new RegistryError("immutable", `${formatCoordinate(c)} already exists in ${repo.name} and releases are immutable`);
   }
   const dependents = await findDependents(db, c);
@@ -149,7 +152,7 @@ async function checkExistingRelease(
 async function resolveDependencies(
   ctx: RegistryContext,
   p: Principal,
-  repo: RepositoryRow,
+  repo: Repo,
   c: Coordinate,
   declared: Coordinate[],
 ): Promise<{ resolution: Resolution; buildIds: Map<string, string> }> {
@@ -157,7 +160,8 @@ async function resolveDependencies(
     const snapshot = declared.find((d) => isSnapshot(d.version));
     if (snapshot) throw validationFailed(`A release may not depend on snapshot ${formatCoordinate(snapshot)}`);
   }
-  const { lookup, buildIds } = createLookup(ctx.db, p, await publishRepositoryOrder(ctx.db, repo));
+  const sources = await publishSources(ctx.db, p, repo);
+  const { lookup, buildIds } = createLookup(ctx.db, p, sources.repositories, sources.viaGroups);
   let resolution: Resolution;
   try {
     resolution = await resolveGraph(declared, lookup);
@@ -182,22 +186,25 @@ async function resolveDependencies(
 /**
  * Publishes an archive: checks permissions and the manifest, validates the protos against the
  * resolved dependencies, stores the blob, then records the build in one transaction serialized
- * per version by an advisory lock. A redeploy replaces build 1 and drops the old blob afterwards.
+ * per version by an advisory lock, upserting the version's `component` row. A redeploy replaces
+ * build 1 and drops the old blob afterwards.
  */
 export async function publish(ctx: RegistryContext, p: Principal, input: PublishInput): Promise<PublishResult> {
   if (p.kind === "anonymous") throw new RegistryError("unauthorized", "Publishing requires an API key");
   const manifest = parseManifest(input.manifest);
   const c: Coordinate = { group: manifest.group, name: manifest.name, version: manifest.version };
-  // Unreadable repositories look missing, so publishing never discloses that one exists.
-  const repo = await readableRepository(ctx.db, p, input.repository, c.group);
+  // Unreadable repositories look missing, so publishing never discloses that one exists; a
+  // readable mirror or group answers method_not_allowed before the write check.
+  const repo = await readableRepository(ctx.repos, p, input.repository, c.group, "publish");
   if (!canAccess(p, repo, c.group, "write")) {
     throw new RegistryError("forbidden", `No write access to ${c.group} in ${repo.name}`);
   }
   const snapshot = isSnapshot(c.version);
-  if (snapshot && !repo.allowSnapshots) {
+  const settings = hostedProtoConfig(repo);
+  if (snapshot && !settings.allowSnapshots) {
     throw new RegistryError("invalid_request", `Repository ${repo.name} does not accept snapshots`);
   }
-  if (!snapshot && !repo.allowReleases) {
+  if (!snapshot && !settings.allowReleases) {
     throw new RegistryError("invalid_request", `Repository ${repo.name} does not accept releases`);
   }
 
@@ -225,7 +232,8 @@ export async function publish(ctx: RegistryContext, p: Principal, input: Publish
   if (issues.length > 0) throw validationFailed("Proto validation failed", { issues });
 
   const storageKey = `${repo.name}/${c.group}/${c.name}/${c.version}/${randomUUID()}.tar.gz`;
-  await ctx.blobs.put(storageKey, input.archive);
+  const blob: BlobRef = { store: ctx.stores.primary.id, storageKey };
+  await putBuffer(ctx.stores.primary, storageKey, input.archive);
 
   let outcome: { buildNumber: number; replaced: BuildRow | null };
   try {
@@ -237,59 +245,68 @@ export async function publish(ctx: RegistryContext, p: Principal, input: Publish
         await tx.execute(sql`select pg_advisory_xact_lock_shared(hashtext(${key}))`);
       }
       if (depBuildIds.length > 0) {
-        const present = await tx.select({ id: build.id }).from(build).where(inArray(build.id, depBuildIds));
+        const present = await tx.select({ id: protoBuild.id }).from(protoBuild).where(inArray(protoBuild.id, depBuildIds));
         if (present.length !== depBuildIds.length) {
           throw validationFailed("A dependency was removed or replaced during publishing; retry");
         }
       }
       const { existing, forced, dependents } = await checkExistingRelease(tx, p, repo, c, digest, input.force);
       // The release exists again; deleting it later records a fresh tombstone.
-      if (!snapshot) await tx.delete(deletedRelease).where(tombstoneOf(repo.id, c));
+      if (!snapshot) await tx.delete(protoDeletedRelease).where(tombstoneOf(repo.id, c));
 
       const [art] = await tx
-        .insert(artifact)
+        .insert(protoArtifact)
         .values({ repositoryId: repo.id, group: c.group, name: c.name })
         .onConflictDoUpdate({
-          target: [artifact.repositoryId, artifact.group, artifact.name],
+          target: [protoArtifact.repositoryId, protoArtifact.group, protoArtifact.name],
           set: { name: sql`excluded.name` },
         })
-        .returning({ id: artifact.id });
+        .returning({ id: protoArtifact.id });
       const now = new Date();
       const [ver] = await tx
-        .insert(version)
+        .insert(protoVersion)
         .values({ artifactId: art!.id, version: c.version, isSnapshot: snapshot })
-        .onConflictDoUpdate({ target: [version.artifactId, version.version], set: { updatedAt: now } })
-        .returning({ id: version.id });
+        .onConflictDoUpdate({ target: [protoVersion.artifactId, protoVersion.version], set: { updatedAt: now } })
+        .returning({ id: protoVersion.id });
       const versionId = ver!.id;
+      // The version's component makes it searchable and carries its download count.
+      await tx
+        .insert(component)
+        .values({ repositoryId: repo.id, namespace: c.group, name: c.name, version: c.version })
+        .onConflictDoUpdate({
+          target: [component.repositoryId, component.namespace, component.name, component.version],
+          set: { updatedAt: now },
+        });
 
       let buildNumber = 1;
       if (existing) {
-        await tx.delete(build).where(eq(build.id, existing.id));
+        await tx.delete(protoBuild).where(eq(protoBuild.id, existing.id));
       } else if (snapshot) {
         const [row] = await tx
-          .select({ highest: max(build.buildNumber) })
-          .from(build)
-          .where(eq(build.versionId, versionId));
+          .select({ highest: max(protoBuild.buildNumber) })
+          .from(protoBuild)
+          .where(eq(protoBuild.versionId, versionId));
         buildNumber = (row?.highest ?? 0) + 1;
       }
 
       const [created] = await tx
-        .insert(build)
+        .insert(protoBuild)
         .values({
           versionId,
           buildNumber,
+          store: blob.store,
           storageKey,
           sha256: digest,
           sizeBytes: input.archive.length,
           publishedByUserId: p.userId,
           publishedByKeyId: p.kind === "apikey" ? p.keyId : null,
         })
-        .returning({ id: build.id });
+        .returning({ id: protoBuild.id });
       const buildId = created!.id;
-      await tx.insert(buildFile).values(files.map((f) => ({ buildId, path: f.path, content: f.content })));
+      await tx.insert(protoBuildFile).values(files.map((f) => ({ buildId, path: f.path, content: f.content })));
       if (declared.length > 0) {
         await tx
-          .insert(dependency)
+          .insert(protoDependency)
           .values(declared.map((d) => ({ buildId, depGroup: d.group, depName: d.name, depVersion: d.version })));
       }
       await recordAudit(tx, {
@@ -302,13 +319,13 @@ export async function publish(ctx: RegistryContext, p: Principal, input: Publish
       return { buildNumber, replaced: existing };
     });
   } catch (error) {
-    await deleteBlobLogged(ctx.blobs, storageKey);
+    await deleteBlobLogged(ctx.stores, blob);
     throw error;
   }
 
   if (outcome.replaced) {
     // The new build is committed; a failure here only leaves an orphaned blob behind.
-    await deleteBlobLogged(ctx.blobs, outcome.replaced.storageKey);
+    await deleteBlobLogged(ctx.stores, outcome.replaced);
   }
   return { coordinate: c, buildNumber: outcome.buildNumber, sha256: digest, redeployed: outcome.replaced !== null };
 }

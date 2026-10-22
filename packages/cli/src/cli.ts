@@ -8,19 +8,19 @@ export interface Io {
   err: (text: string) => void;
 }
 
-const HELP = `Usage: protoloom <command> [options]
+const HELP = `Usage: weaver <command> [options]
 
 Commands:
   fetch    Download the configured proto dependencies into the output directory
 
 Options for fetch:
-  --config <file>   Config file (default: protoloom.json)
+  --config <file>   Config file (default: weaver.json)
   --out <dir>       Output directory (overrides outDir; default: protos)
   -h, --help        Show this help
 
 Environment:
-  PROTOLOOM_URL     Registry url (overrides the config's url)
-  PROTOLOOM_TOKEN   API key sent as a Bearer token
+  WEAVER_URL     Registry url (overrides the config's url)
+  WEAVER_TOKEN   API key sent as a Bearer token
 `;
 
 /** Runs the CLI and returns the process exit code; expected failures print only their message. */
@@ -49,13 +49,13 @@ export async function run(
       io.err(HELP);
       return 1;
     }
-    if (command !== "fetch") throw new CliError(`Unknown command "${command}". Run protoloom --help.`);
+    if (command !== "fetch") throw new CliError(`Unknown command "${command}". Run weaver --help.`);
 
-    const configPath = resolve(cwd, values.config ?? "protoloom.json");
+    const configPath = resolve(cwd, values.config ?? "weaver.json");
     const config = await loadConfig(configPath);
     const result = await fetchProtos({
       url: resolveUrl(config, env),
-      token: env.PROTOLOOM_TOKEN || undefined,
+      token: env.WEAVER_TOKEN || undefined,
       repositories: config.repositories,
       dependencies: config.dependencies,
       outDir: resolveOutDir(config, values.out, cwd),

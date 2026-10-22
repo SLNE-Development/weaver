@@ -17,7 +17,7 @@ FROM base AS pruner
 COPY . .
 # The turbo version comes from the root package.json, so it is pinned in one place.
 RUN npm install --global "turbo@$(node -p "require('./package.json').devDependencies.turbo")" \
- && turbo prune web @protoloom/worker --docker
+ && turbo prune web @weaver/worker --docker
 
 # ---- builder: install, build both apps, assemble the runtime tree under /out ----
 FROM base AS builder
@@ -32,12 +32,12 @@ RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
 COPY --from=pruner /repo/out/full/ .
 # The env schema (t3-env) must not run at build time; real values arrive at runtime.
 ENV SKIP_ENV_VALIDATION=1
-RUN pnpm turbo run build --filter=web --filter=@protoloom/worker
+RUN pnpm turbo run build --filter=web --filter=@weaver/worker
 
 # Runtime tree:
 #   /out/app            Next standalone server (apps/web/server.js), static assets, public/
 #   /out/app/apps/worker  self-contained worker (dist + prod node_modules), via `pnpm deploy`
-#   /out/migrate        self-contained @protoloom/db (dist + drizzle migrations + prod node_modules)
+#   /out/migrate        self-contained @weaver/db (dist + drizzle migrations + prod node_modules)
 RUN mkdir -p /out/app \
  && cp -r apps/web/.next/standalone/. /out/app/ \
  && mkdir -p /out/app/apps/web/.next \
@@ -53,8 +53,8 @@ RUN set -e; \
     "$bin" --version
 # `pnpm deploy` packs with npm-packlist, which falls back to .gitignore (it lists dist/): drop it first.
 RUN rm -f .gitignore \
- && pnpm --filter=@protoloom/worker deploy --legacy --prod /out/app/apps/worker \
- && pnpm --filter=@protoloom/db deploy --legacy --prod /out/migrate
+ && pnpm --filter=@weaver/worker deploy --legacy --prod /out/app/apps/worker \
+ && pnpm --filter=@weaver/db deploy --legacy --prod /out/migrate
 COPY docker/migrate.mjs /out/migrate/run.mjs
 
 # ---- runtime ----

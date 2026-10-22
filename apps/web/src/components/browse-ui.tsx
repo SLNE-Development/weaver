@@ -1,8 +1,8 @@
 import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
 // The subpath keeps node-only parts of core (storage, database) out of client bundles.
-import { isSnapshot } from "@protoloom/core/coordinates";
-import { Badge } from "@protoloom/ui/components/badge";
+import { isSnapshot } from "@weaver/core/coordinates";
+import { Badge } from "@weaver/ui/components/badge";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -10,8 +10,8 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@protoloom/ui/components/breadcrumb";
-import { cn } from "@protoloom/ui/lib/utils";
+} from "@weaver/ui/components/breadcrumb";
+import { cn } from "@weaver/ui/lib/utils";
 import { formatRelative, formatTimestamp } from "@/lib/browse";
 
 /** Shared building blocks of the browse pages and the dashboard (server-renderable). */

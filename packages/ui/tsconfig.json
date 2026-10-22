@@ -1,5 +1,5 @@
 {
-  "extends": "@protoloom/config/tsconfig.base.json",
+  "extends": "@weaver/config/tsconfig.base.json",
   "compilerOptions": {
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "module": "ESNext",
@@ -8,7 +8,7 @@
     "noEmit": true,
     "types": ["node"],
     "paths": {
-      "@protoloom/ui/*": ["./src/*"]
+      "@weaver/ui/*": ["./src/*"]
     }
   },
   "include": ["src", "vitest.config.ts"]

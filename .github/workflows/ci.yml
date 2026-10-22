@@ -55,3 +55,10 @@ jobs:
           java-version: "21"
       - uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
       - run: ./gradlew test --no-daemon --console=plain
+
+  # Real clients against the production image, with local stand-in upstreams only.
+  e2e:
+    name: E2E
+    uses: ./.github/workflows/e2e.yml
+    with:
+      upstreams: local

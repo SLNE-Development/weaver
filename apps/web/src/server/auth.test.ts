@@ -1,6 +1,6 @@
 import { afterAll, describe, expect, it } from "vitest";
 import { betterAuth } from "better-auth";
-import { createDb } from "@protoloom/db";
+import { createDb } from "@weaver/db";
 import { buildAuthOptions, getEnabledSocialProviders, isPublicAuthPath, type AuthEnv } from "./auth";
 
 const base: AuthEnv = {

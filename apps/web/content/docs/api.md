@@ -2,7 +2,7 @@
 title: REST API
 description: Call publish, resolve, list, download and delete directly, with request and response examples and every error code.
 section: Clients
-order: 3
+order: 6
 ---
 
 The Gradle plugin and the CLI use a small JSON API under `{{url}}/api/v1`. You can call it directly from scripts or other build tools. The web app uses its own internal API; the endpoints below are the stable ones for clients.
@@ -48,7 +48,7 @@ Publishing needs an API key with `write` access. Signed-in browser sessions can'
 
 ```sh
 curl -X PUT "{{url}}/api/v1/repos/releases/artifacts/dev.surf.economy/economy-contracts/1.4.0" \
-  -H "Authorization: Bearer $PROTOLOOM_TOKEN" \
+  -H "Authorization: Bearer $WEAVER_TOKEN" \
   -F 'manifest={"group":"dev.surf.economy","name":"economy-contracts","version":"1.4.0","dependencies":["dev.surf.common:common-types:2.0.0"]};type=application/json' \
   -F "archive=@protos.tar.gz;type=application/gzip"
 ```
@@ -74,6 +74,7 @@ Add `?force=true` to redeploy a release that other versions depend on. Only an a
 | 401 | `unauthorized` | No token, or an invalid one |
 | 403 | `forbidden` | The key can read but not write this group, or `force` without admin |
 | 404 | `not_found` | The repository doesn't exist or the key can't read it |
+| 405 | `method_not_allowed` | Publishing or deleting through a group or a mirror. Both are read only; use a hosted repository. |
 | 409 | `immutable` | The release exists and the repository doesn't allow redeploy |
 | 409 | `has_dependents` | Redeploying a release that other versions depend on |
 | 413 | `payload_too_large` | The body or archive is over the limits |
@@ -162,7 +163,7 @@ Newest version first. `404 not_found` when the artifact doesn't exist or you can
 GET /api/v1/repos/{repo}/artifacts/{group}/{name}/{version}
 ```
 
-Describes the newest build; for a snapshot that is the latest publish.
+Describes the newest build; for a snapshot that is the latest publish. Add `?build=<n>` to describe a specific build (`404 not_found` once it was deleted). Dependencies are `group:name:version` strings, like `coordinate`.
 
 ```json
 {
@@ -171,7 +172,7 @@ Describes the newest build; for a snapshot that is the latest publish.
   "buildNumber": 1,
   "sha256": "9f2c…e41a",
   "sizeBytes": 2318,
-  "dependencies": [{ "group": "dev.surf.common", "name": "common-types", "version": "2.0.0" }],
+  "dependencies": ["dev.surf.common:common-types:2.0.0"],
   "files": ["surf/economy/v1/money.proto", "surf/economy/v1/wallet.proto"],
   "publishedBy": "Ada",
   "downloadCount": 42,
@@ -186,7 +187,7 @@ Describes the newest build; for a snapshot that is the latest publish.
 GET /api/v1/repos/{repo}/artifacts/{group}/{name}/{version}/archive
 ```
 
-Returns the `.tar.gz` of the newest build as `application/gzip`, or of a specific build with `?build=<n>` (`404 not_found` once that build was deleted, for example by a cleanup policy), with its checksum in the `x-protoloom-sha256` header. Each request counts as a download, which [cleanup policies](/docs/admin/cleanup) use to find unused versions.
+Returns the `.tar.gz` of the newest build as `application/gzip`, or of a specific build with `?build=<n>` (`404 not_found` once that build was deleted, for example by a cleanup policy), with its checksum in the `x-weaver-sha256` header. Each request counts as a download, which [cleanup policies](/docs/admin/cleanup) use to find unused versions.
 
 ```sh
 curl -fLo economy-contracts-1.4.0.tar.gz \
@@ -238,9 +239,15 @@ Every error has the same body:
 | 400 | `invalid_request` | The request is malformed. The message says what is wrong; `details.issues` lists fields for body validation errors. |
 | 401 | `unauthorized` | Publishing or deleting without a key, or an invalid, expired or revoked key, or a banned owner. |
 | 403 | `forbidden` | Authenticated, but not allowed: no write access, a viewer deleting, or `force` without admin. |
-| 404 | `not_found` | The repository, artifact, version or a dependency doesn't exist, or you can't read it. |
+| 404 | `not_found` | The repository, artifact, version or a dependency doesn't exist, or you can't read it. Also any path that is not an API endpoint, and a mirror loop. |
+| 405 | `method_not_allowed` | Publishing or deleting through a group or a mirror, or a method the endpoint doesn't support. The `allow` header lists the supported ones. |
 | 409 | `immutable` | A release that already exists, in a repository without redeploy. |
 | 409 | `has_dependents` | Deleting or redeploying a version that others depend on. `details.dependents` lists them. |
 | 413 | `payload_too_large` | The body, the archive, a file, or the file count is over the limit. |
 | 422 | `validation_failed` | The protos don't compile, or the dependency graph can't be used. `details.issues` or `details.collisions` explain why. |
+| 502 | `upstream_unavailable` | A mirror's upstream did not answer, or answered with an error, and no cached copy exists. The message names the mirror, for example `Upstream of up-mirror did not answer`. |
 | 500 | `internal_error` | Something went wrong on the server. The response reveals nothing; check the server logs. |
+
+### Mirror hops
+
+Weaver instances that mirror each other send an `x-weaver-hops` header with the requests they make upstream and raise it by one at every hop. An instance that receives more than 4 hops answers `404 not_found` with the message `Mirror loop detected` without doing any work, so a loop between mirrors cannot run forever (see [Troubleshooting](/docs/troubleshooting#mirrors)). Clients never need to send this header.

@@ -1,6 +1,6 @@
 /**
  * Repository and group name rules for client-side form validation. They mirror
- * `isValidRepositoryName` / `isValidGroup` of `@protoloom/core`, which can't be bundled into the
+ * `isValidRepositoryName` / `isValidGroup` of `@weaver/core`, which can't be bundled into the
  * browser; `names.test.ts` checks both agree. The server validates again on every call.
  */
 

@@ -3,15 +3,15 @@
 import { MonitorIcon, MoonIcon, SunIcon } from "lucide-react"
 import { useTheme } from "next-themes"
 
-import { Button } from "@protoloom/ui/components/button"
+import { Button } from "@weaver/ui/components/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
-} from "@protoloom/ui/components/dropdown-menu"
-import { cn } from "@protoloom/ui/lib/utils"
+} from "@weaver/ui/components/dropdown-menu"
+import { cn } from "@weaver/ui/lib/utils"
 
 /** Icon button that opens a Light / Dark / System theme menu. Needs ThemeProvider above it. */
 function ThemeToggle({ className }: { className?: string }) {

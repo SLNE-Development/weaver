@@ -3,18 +3,27 @@ import { createCallerFactory, router } from "./init";
 import { auditRouter } from "./routers/audit";
 import { browseRouter } from "./routers/browse";
 import { dashboardRouter } from "./routers/dashboard";
+import { dockerRouter } from "./routers/docker";
 import { invitesRouter } from "./routers/invites";
 import { keysRouter } from "./routers/keys";
+import { mavenRouter } from "./routers/maven";
+import { npmRouter } from "./routers/npm";
 import { policiesRouter } from "./routers/policies";
 import { repositoriesRouter } from "./routers/repositories";
+import { searchRouter } from "./routers/search";
 import { settingsRouter } from "./routers/settings";
+import { statsRouter } from "./routers/stats";
 import { usersRouter } from "./routers/users";
 import { versionsRouter } from "./routers/versions";
 
 /** The tRPC API of the management UI. */
 export const appRouter = router({
   browse: browseRouter,
+  search: searchRouter,
   dashboard: dashboardRouter,
+  docker: dockerRouter,
+  maven: mavenRouter,
+  npm: npmRouter,
   repositories: repositoriesRouter,
   policies: policiesRouter,
   versions: versionsRouter,
@@ -22,6 +31,7 @@ export const appRouter = router({
   invites: invitesRouter,
   users: usersRouter,
   settings: settingsRouter,
+  stats: statsRouter,
   audit: auditRouter,
 });
 

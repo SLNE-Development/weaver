@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { ThemeProvider } from "@protoloom/ui/components/theme-provider";
-import { Toaster } from "@protoloom/ui/components/sonner";
+import { ThemeProvider } from "@weaver/ui/components/theme-provider";
+import { Toaster } from "@weaver/ui/components/sonner";
 import { defaultMetadata } from "@/lib/seo";
 import { TRPCReactProvider } from "@/trpc/client";
-import "@protoloom/ui/globals.css";
+import "@weaver/ui/globals.css";
 
-/** Site-wide metadata: base URL, the "%s · Protoloom" title template, description and share card defaults. */
+/** Site-wide metadata: base URL, the "%s · Weaver" title template, description and share card defaults. */
 export function generateMetadata(): Metadata {
   return defaultMetadata();
 }

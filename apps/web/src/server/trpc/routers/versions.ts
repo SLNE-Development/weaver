@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { formatCoordinate, parseCoordinate, RegistryError, type Dependent } from "@protoloom/core";
+import { formatCoordinate, parseCoordinate, RegistryError, type Dependent } from "@weaver/core";
 import { maintainerProcedure, router } from "../init";
 import { coordinateString, repositoryName } from "../helpers";
 

@@ -1,0 +1,6 @@
+apiVersion: v2
+name: weaver-e2e
+description: Helm chart pushed to and pulled from Weaver by scripts/e2e/docker.sh.
+type: application
+version: 0.1.0
+appVersion: "1"

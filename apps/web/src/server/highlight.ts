@@ -19,8 +19,8 @@ interface ShikiState {
 }
 
 // Kept on globalThis so dev-mode reloads reuse the loaded grammars and the cache.
-const globalForShiki = globalThis as typeof globalThis & { __protoloomShiki?: ShikiState };
-const state: ShikiState = (globalForShiki.__protoloomShiki ??= { cache: new Map() });
+const globalForShiki = globalThis as typeof globalThis & { __weaverShiki?: ShikiState };
+const state: ShikiState = (globalForShiki.__weaverShiki ??= { cache: new Map() });
 
 function highlighter(): Promise<Highlighter> {
   state.highlighter ??= createHighlighter({ themes: ["github-light", "github-dark"], langs: LANGUAGES });

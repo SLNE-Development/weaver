@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { cache, type ReactNode } from "react";
 import { DownloadIcon } from "lucide-react";
-import { isSnapshot } from "@protoloom/core/coordinates";
-import { Button } from "@protoloom/ui/components/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@protoloom/ui/components/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@protoloom/ui/components/tabs";
+import { isSnapshot } from "@weaver/core/coordinates";
+import { Button } from "@weaver/ui/components/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@weaver/ui/components/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@weaver/ui/components/tabs";
 import { KindBadge, PageContainer, PageHeader, Panel, RelativeTime } from "@/components/browse-ui";
 import { CopyButton } from "@/components/copy-button";
 import { DeleteVersionDialog } from "@/components/delete-version-dialog";
@@ -62,8 +62,10 @@ async function locateDependencies(dependencies: string[]): Promise<Map<string, s
   const located = await Promise.all(
     dependencies.map(async (dep) => {
       const [group, name] = parts(dep);
-      const results = await api.browse.search({ query: `${group}:${name}`, limit: 20 }).catch(() => []);
-      return [dep, results.find((r) => r.group === group && r.name === name)?.repository ?? null] as const;
+      const { hits } = await api.search.query({ q: `${group}:${name}`, format: "proto", limit: 20 }).catch(() => ({ hits: [] }));
+      // Only a hosted repository the visitor reads directly has an artifact page of its own.
+      const hit = hits.find((h) => h.namespace === group && h.name === name && h.via === null && h.kind === "hosted");
+      return [dep, hit?.repository ?? null] as const;
     }),
   );
   return new Map(located);
@@ -345,7 +347,7 @@ export default async function VersionPage({
         </TabsContent>
 
         <TabsContent value="usage">
-          <UsageSnippet {...snippet} />
+          <UsageSnippet repository={repo} coordinate={coordinate} />
         </TabsContent>
       </Tabs>
     </PageContainer>

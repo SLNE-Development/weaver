@@ -1,11 +1,8 @@
-import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { requireRole } from "@/server/session";
-import { NewRepository } from "./new-repository";
 
-export const metadata: Metadata = { title: "New repository" };
-
-/** Create a repository (admins only). */
+/** Old link target: repositories are created in a dialog on the list (admins only). */
 export default async function NewRepositoryPage() {
   await requireRole("admin", "/repositories/new");
-  return <NewRepository />;
+  redirect("/repositories?create=1");
 }

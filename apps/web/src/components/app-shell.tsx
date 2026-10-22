@@ -4,8 +4,8 @@ import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronsUpDownIcon, LogInIcon, LogOutIcon, SearchIcon, UserIcon } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@protoloom/ui/components/avatar";
-import { Button } from "@protoloom/ui/components/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@weaver/ui/components/avatar";
+import { Button } from "@weaver/ui/components/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,9 +14,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@protoloom/ui/components/dropdown-menu";
-import { Kbd, KbdGroup } from "@protoloom/ui/components/kbd";
-import { Logo } from "@protoloom/ui/components/logo";
+} from "@weaver/ui/components/dropdown-menu";
+import { Kbd, KbdGroup } from "@weaver/ui/components/kbd";
+import { Logo } from "@weaver/ui/components/logo";
 import {
   Sidebar,
   SidebarContent,
@@ -31,14 +31,14 @@ import {
   SidebarMenuItem,
   SidebarProvider,
   SidebarTrigger,
-} from "@protoloom/ui/components/sidebar";
-import { ThemeToggle } from "@protoloom/ui/components/theme-toggle";
+} from "@weaver/ui/components/sidebar";
+import { ThemeToggle } from "@weaver/ui/components/theme-toggle";
 import { isNavActive, navItemsFor, type NavItem } from "@/lib/navigation";
 import type { SessionUser } from "@/server/session";
-import { ArtifactSearch } from "./artifact-search";
 import { CommandMenuProvider, useCommandMenu } from "./command-actions";
 import { CommandMenu } from "./command-menu";
 import { NAV_ICONS } from "./nav-icons";
+import { PackageSearch } from "./package-search";
 import { useSignOut } from "./use-sign-out";
 
 function initials(name: string): string {
@@ -190,7 +190,7 @@ export function AppShell({ user, children }: { user: SessionUser | null; childre
           </header>
           {children}
         </SidebarInset>
-        <CommandMenu role={role} artifactSearch={ArtifactSearch} />
+        <CommandMenu role={role} packageSearch={PackageSearch} />
       </SidebarProvider>
     </CommandMenuProvider>
   );

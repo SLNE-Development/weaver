@@ -2,11 +2,11 @@
 
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
-import { cn } from "@protoloom/ui/lib/utils"
+import { cn } from "@weaver/ui/lib/utils"
 
-import { Button } from "@protoloom/ui/components/button"
-import { Input } from "@protoloom/ui/components/input"
-import { Textarea } from "@protoloom/ui/components/textarea"
+import { Button } from "@weaver/ui/components/button"
+import { Input } from "@weaver/ui/components/input"
+import { Textarea } from "@weaver/ui/components/textarea"
 
 function InputGroup({ className, ...props }: React.ComponentProps<"div">) {
   return (

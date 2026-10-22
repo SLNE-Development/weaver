@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { CircleAlertIcon } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@protoloom/ui/components/alert";
+import { Alert, AlertDescription, AlertTitle } from "@weaver/ui/components/alert";
 import { AuthFrame } from "@/components/auth-frame";
 import { ProviderButtons } from "@/components/provider-buttons";
 import { safeNextPath } from "@/lib/access";
@@ -35,9 +35,9 @@ export default async function LoginPage({
 
   return (
     <AuthFrame
-      title="Sign in to Protoloom"
+      title="Sign in to Weaver"
       description="Use the account you connected to this registry."
-      footer="New here? Access is by invitation. Ask an admin of this Protoloom for an invite link."
+      footer="New here? Access is by invitation. Ask an admin of this Weaver for an invite link."
     >
       {error && (
         <Alert variant="destructive">

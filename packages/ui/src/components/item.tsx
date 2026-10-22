@@ -1,9 +1,9 @@
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
-import { cn } from "@protoloom/ui/lib/utils"
+import { cn } from "@weaver/ui/lib/utils"
 import { Slot } from "radix-ui"
 
-import { Separator } from "@protoloom/ui/components/separator"
+import { Separator } from "@weaver/ui/components/separator"
 
 function ItemGroup({ className, ...props }: React.ComponentProps<"div">) {
   return (

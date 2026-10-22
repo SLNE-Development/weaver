@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { cn } from "@protoloom/ui/lib/utils";
+import { cn } from "@weaver/ui/lib/utils";
 import { highlight, type CodeLanguage } from "@/server/highlight";
 import { CopyButton } from "./copy-button";
 

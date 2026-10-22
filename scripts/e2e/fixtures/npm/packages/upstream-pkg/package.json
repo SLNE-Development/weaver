@@ -1,0 +1,7 @@
+{
+  "name": "upstream-pkg",
+  "version": "1.0.0",
+  "description": "Unscoped package that only the upstream registry has.",
+  "main": "index.js",
+  "license": "MIT"
+}

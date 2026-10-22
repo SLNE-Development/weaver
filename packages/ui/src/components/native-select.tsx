@@ -1,5 +1,5 @@
 import * as React from "react"
-import { cn } from "@protoloom/ui/lib/utils"
+import { cn } from "@weaver/ui/lib/utils"
 import { ChevronDownIcon } from "lucide-react"
 
 function NativeSelect({

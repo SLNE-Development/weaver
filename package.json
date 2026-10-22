@@ -1,5 +1,5 @@
 {
-  "name": "protoloom",
+  "name": "weaver",
   "private": true,
   "packageManager": "pnpm@11.13.0",
   "engines": { "node": ">=22.3" },

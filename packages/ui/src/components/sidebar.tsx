@@ -2,28 +2,28 @@
 
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
-import { cn } from "@protoloom/ui/lib/utils"
+import { cn } from "@weaver/ui/lib/utils"
 import { PanelLeftIcon } from "lucide-react"
 import { Slot } from "radix-ui"
 
-import { useIsMobile } from "@protoloom/ui/hooks/use-mobile"
-import { Button } from "@protoloom/ui/components/button"
-import { Input } from "@protoloom/ui/components/input"
-import { Separator } from "@protoloom/ui/components/separator"
+import { useIsMobile } from "@weaver/ui/hooks/use-mobile"
+import { Button } from "@weaver/ui/components/button"
+import { Input } from "@weaver/ui/components/input"
+import { Separator } from "@weaver/ui/components/separator"
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from "@protoloom/ui/components/sheet"
-import { Skeleton } from "@protoloom/ui/components/skeleton"
+} from "@weaver/ui/components/sheet"
+import { Skeleton } from "@weaver/ui/components/skeleton"
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@protoloom/ui/components/tooltip"
+} from "@weaver/ui/components/tooltip"
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7

@@ -1,5 +1,5 @@
 {
-  "extends": "@protoloom/config/tsconfig.next.json",
+  "extends": "@weaver/config/tsconfig.next.json",
   "compilerOptions": {
     "types": ["node"],
     "plugins": [{ "name": "next" }],
@@ -9,6 +9,7 @@
     "next-env.d.ts",
     "src",
     "e2e",
+    "scripts",
     "playwright.config.ts",
     "next.config.ts",
     "vitest.config.ts",

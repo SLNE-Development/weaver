@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@protoloom/ui/components/button";
-import { Spinner } from "@protoloom/ui/components/spinner";
-import { cn } from "@protoloom/ui/lib/utils";
+import { Button } from "@weaver/ui/components/button";
+import { Spinner } from "@weaver/ui/components/spinner";
+import { cn } from "@weaver/ui/lib/utils";
 import type { SocialProviderId } from "@/server/auth";
 import { authClient } from "@/lib/auth-client";
 import { DiscordIcon, GitHubIcon } from "./provider-icons";

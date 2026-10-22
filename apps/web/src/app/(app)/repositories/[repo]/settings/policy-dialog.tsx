@@ -1,63 +1,89 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { TriangleAlertIcon } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@protoloom/ui/components/alert";
-import { Button } from "@protoloom/ui/components/button";
-import { Checkbox } from "@protoloom/ui/components/checkbox";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@protoloom/ui/components/dialog";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@protoloom/ui/components/form";
-import { Input } from "@protoloom/ui/components/input";
-import { RadioGroup, RadioGroupItem } from "@protoloom/ui/components/radio-group";
-import { Spinner } from "@protoloom/ui/components/spinner";
-import { Switch } from "@protoloom/ui/components/switch";
+import { Alert, AlertDescription, AlertTitle } from "@weaver/ui/components/alert";
+import { Button } from "@weaver/ui/components/button";
+import { Checkbox } from "@weaver/ui/components/checkbox";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@weaver/ui/components/dialog";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@weaver/ui/components/form";
+import { Input } from "@weaver/ui/components/input";
+import { RadioGroup, RadioGroupItem } from "@weaver/ui/components/radio-group";
+import { Spinner } from "@weaver/ui/components/spinner";
+import { Switch } from "@weaver/ui/components/switch";
+import type { Format } from "@weaver/core";
+import { kindUsesPattern } from "@weaver/core/cleanup-kinds";
 import {
-  POLICY_KINDS,
-  POLICY_KIND_INFO,
   describePolicy,
+  kindUsesIncludeReleases,
   policyFormSchema,
+  policyKindInfo,
+  policyKinds,
+  scopeHint,
   type PolicyFormValues,
+  type PolicyUnit,
 } from "@/lib/cleanup-policies";
-import { GROUP_PREFIX_HINT } from "@/lib/names";
 
-const EMPTY: PolicyFormValues = {
-  kind: "keep_last_snapshot_builds",
+/** The new-policy defaults of a `format` repository: its first kind. */
+const emptyValues = (format: Format): PolicyFormValues => ({
+  kind: policyKinds(format)[0]!,
   value: 10,
   groupPrefix: "",
+  pattern: "",
   includeReleases: false,
   enabled: true,
+});
+
+/** Label of the value field per unit. */
+const VALUE_LABELS: Record<PolicyUnit, string> = {
+  builds: "Builds to keep",
+  versions: "Versions to keep",
+  tags: "Tags to keep",
+  days: "Days",
 };
 
-/** Add or edit one cleanup policy. `initial` (an existing policy) switches the dialog to edit mode. */
+/**
+ * Add or edit one cleanup policy of a `format` repository, offering only the format's kinds and
+ * the options they use. `initial` (an existing policy) switches the dialog to edit mode.
+ */
 export function PolicyDialog({
+  format,
   open,
   onOpenChange,
   initial,
   submitting,
   onSubmit,
 }: {
+  format: Format;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   initial: PolicyFormValues | null;
   submitting: boolean;
   onSubmit: (values: PolicyFormValues) => Promise<unknown>;
 }) {
-  const form = useForm<PolicyFormValues>({ resolver: zodResolver(policyFormSchema), defaultValues: initial ?? EMPTY });
+  const schema = useMemo(() => policyFormSchema(format), [format]);
+  const empty = useMemo(() => emptyValues(format), [format]);
+  const form = useForm<PolicyFormValues>({ resolver: zodResolver(schema), defaultValues: initial ?? empty });
   // Reset only when the dialog opens, never while it is being edited (a failed save keeps the input).
   const wasOpen = useRef(false);
   useEffect(() => {
-    if (open && !wasOpen.current) form.reset(initial ?? EMPTY);
+    if (open && !wasOpen.current) form.reset(initial ?? empty);
     wasOpen.current = open;
-  }, [open, initial, form]);
+  }, [open, initial, empty, form]);
 
-  const [kind, value, includeReleases, groupPrefix] = useWatch({
+  const [kind, value, includeReleases, groupPrefix, pattern] = useWatch({
     control: form.control,
-    name: ["kind", "value", "includeReleases", "groupPrefix"],
+    name: ["kind", "value", "includeReleases", "groupPrefix", "pattern"],
   });
-  const unit = POLICY_KIND_INFO[kind].unit;
-  const preview = Number.isInteger(value) && value > 0 ? describePolicy({ kind, value, includeReleases }) : null;
+  const info = policyKindInfo(format, kind);
+  const usesPattern = kindUsesPattern(kind);
+  const preview =
+    Number.isInteger(value) && value > 0
+      ? describePolicy(format, { kind, value, includeReleases, pattern: pattern.trim() || "…" })
+      : null;
+  const prefix = groupPrefix.trim();
 
   async function submit(values: PolicyFormValues) {
     try {
@@ -85,18 +111,21 @@ export function PolicyDialog({
                   <FormLabel>Rule</FormLabel>
                   <FormControl>
                     <RadioGroup value={field.value} onValueChange={field.onChange} className="grid gap-2">
-                      {POLICY_KINDS.map((option) => (
-                        <label
-                          key={option}
-                          className="flex cursor-pointer gap-3 rounded-md border p-3 transition-colors hover:bg-muted/50 has-data-[state=checked]:border-foreground has-data-[state=checked]:bg-muted/40"
-                        >
-                          <RadioGroupItem value={option} aria-label={POLICY_KIND_INFO[option].title} className="mt-0.5" />
-                          <span className="grid gap-0.5">
-                            <span className="text-sm font-medium">{POLICY_KIND_INFO[option].title}</span>
-                            <span className="text-xs text-muted-foreground">{POLICY_KIND_INFO[option].description}</span>
-                          </span>
-                        </label>
-                      ))}
+                      {policyKinds(format).map((option) => {
+                        const optionInfo = policyKindInfo(format, option);
+                        return (
+                          <label
+                            key={option}
+                            className="flex cursor-pointer gap-3 rounded-md border p-3 transition-colors hover:bg-muted/50 has-data-[state=checked]:border-foreground has-data-[state=checked]:bg-muted/40"
+                          >
+                            <RadioGroupItem value={option} aria-label={optionInfo.title} className="mt-0.5" />
+                            <span className="grid gap-0.5">
+                              <span className="text-sm font-medium">{optionInfo.title}</span>
+                              <span className="text-xs text-muted-foreground">{optionInfo.description}</span>
+                            </span>
+                          </label>
+                        );
+                      })}
                     </RadioGroup>
                   </FormControl>
                 </FormItem>
@@ -109,7 +138,7 @@ export function PolicyDialog({
                 name="value"
                 render={({ field }) => (
                   <FormItem className="content-start">
-                    <FormLabel>{unit === "builds" ? "Builds to keep" : "Days"}</FormLabel>
+                    <FormLabel>{VALUE_LABELS[info.unit]}</FormLabel>
                     <div className="flex items-center gap-2">
                       <FormControl>
                         <Input
@@ -125,7 +154,7 @@ export function PolicyDialog({
                           onChange={(event) => field.onChange(event.target.valueAsNumber)}
                         />
                       </FormControl>
-                      <span className="text-sm text-muted-foreground">{unit}</span>
+                      <span className="text-sm text-muted-foreground">{info.unit}</span>
                     </div>
                     <FormMessage />
                   </FormItem>
@@ -136,18 +165,37 @@ export function PolicyDialog({
                 name="groupPrefix"
                 render={({ field }) => (
                   <FormItem className="content-start">
-                    <FormLabel>Group prefix</FormLabel>
+                    <FormLabel>{info.scopeLabel}</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="All groups" autoComplete="off" spellCheck={false} className="font-mono placeholder:font-sans" />
+                      <Input {...field} placeholder="Everything" autoComplete="off" spellCheck={false} className="font-mono placeholder:font-sans" />
                     </FormControl>
-                    <FormDescription className="text-xs">Optional. {GROUP_PREFIX_HINT}</FormDescription>
+                    <FormDescription className="text-xs">Optional. {scopeHint(format)}</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
             </div>
 
-            {kind === "delete_not_downloaded" && (
+            {usesPattern && (
+              <FormField
+                control={form.control}
+                name="pattern"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tag pattern</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="v*" autoComplete="off" spellCheck={false} className="font-mono" />
+                    </FormControl>
+                    <FormDescription className="text-xs">
+                      Only tags matching it are counted and deleted; * matches any characters. Other tags are kept.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
+            {kindUsesIncludeReleases(format, kind) && (
               <FormField
                 control={form.control}
                 name="includeReleases"
@@ -196,7 +244,7 @@ export function PolicyDialog({
             {preview && (
               <p className="rounded-md bg-muted/50 px-3 py-2 font-mono text-xs text-muted-foreground" data-testid="policy-summary">
                 {preview}
-                {groupPrefix.trim() ? ` in ${groupPrefix.trim()}.*` : " in all groups"}
+                {prefix ? ` in ${format === "proto" ? `${prefix}.*` : `${prefix}*`}` : ""}
               </p>
             )}
 

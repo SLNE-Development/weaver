@@ -11,75 +11,90 @@ function Prompt({ children }: { children: ReactNode }) {
   );
 }
 
-const STEPS: { n: string; title: string; text: string; terminal: ReactNode; label: string }[] = [
-  {
-    n: "1 · publish",
-    title: "Gradle uploads the protos",
-    text: "Put .proto files in src/main/proto and run one task. The URL and API key come from the environment, so CI needs no extra setup.",
-    label: "Publishing with Gradle",
-    terminal: (
-      <>
-        <Prompt>./gradlew publishProtos</Prompt>
-        {"\n"}
-        <span className="text-release">✓</span> Published dev.surf.economy:economy-contracts:1.4.0 to releases, build 1
-      </>
-    ),
-  },
-  {
-    n: "2 · validate",
-    title: "Protoloom checks every file",
-    text: "Each artifact must compile together with its dependencies, and every import must come from the artifact itself or a declared dependency.",
-    label: "A rejected publish",
-    terminal: (
-      <>
-        <Prompt>./gradlew publishProtos</Prompt>
-        {"\n"}
-        <span className="text-snapshot">✗</span> validation_failed: Proto validation failed
-        {"\n  "}surf/protection/v1/region.proto:4: imported file does not exist: surf/economy/v1/money.proto
-        {"\n  "}surf/protection/v1/region.proto:6: cannot find `surf.economy.v1.Money` in this scope
-      </>
-    ),
-  },
-  {
-    n: "3 · fetch",
-    title: "Builds pull the whole tree",
-    text: "Gradle or the Node CLI asks the server to resolve the dependency tree and writes one merged proto folder your codegen can read.",
-    label: "Fetching with Gradle",
-    terminal: (
-      <>
-        <Prompt>./gradlew fetchProtos</Prompt>
-        {"\n"}Protoloom: downloading dev.surf.economy:economy-contracts:1.4.0
-        {"\n"}Protoloom: downloading dev.surf.core:core-types:2.1.0
-        {"\n"}
-        <span className="text-release">✓</span> build/protoloom/protos
-      </>
-    ),
-  },
-];
+function Comment({ children }: { children: ReactNode }) {
+  return <span className="text-muted-foreground italic">{children}</span>;
+}
 
-/** Publish → validate → fetch, in three columns (stacked on phones). */
-export function HowItWorks() {
+interface Kind {
+  name: string;
+  title: string;
+  text: ReactNode;
+  label: string;
+  terminal: ReactNode;
+}
+
+function kinds(origin: string, host: string): Kind[] {
+  return [
+    {
+      name: "hosted",
+      title: "Publish your own",
+      text: "Deploy jars, publish packages and push images to a hosted repository. Releases stay as published unless the repository allows redeploy; Maven snapshots can always be replaced.",
+      label: "Pushing to a hosted repository",
+      terminal: (
+        <>
+          <Prompt>docker push {host}/apps/web:1.0</Prompt>
+          {"\n"}1.0: digest: sha256:9f2c…e41a size: 1570
+        </>
+      ),
+    },
+    {
+      name: "mirror",
+      title: "Proxy an upstream",
+      text: (
+        <>
+          A read-only proxy of Maven Central, registry.npmjs.org, Docker Hub or any other upstream, tried in order.
+          Caching is off by default. Turn it on per mirror to keep what was fetched, refresh metadata after a TTL, evict by
+          age and size, and keep serving while the upstream is down.
+        </>
+      ),
+      label: "Pulling through a Docker Hub mirror",
+      terminal: (
+        <>
+          <Prompt>docker pull {host}/hub/nginx:latest</Prompt>
+          {"\n"}latest: Pulling from hub/nginx
+          {"\n"}Status: Downloaded newer image for {host}/hub/nginx:latest
+        </>
+      ),
+    },
+    {
+      name: "group",
+      title: "One URL for all of it",
+      text: "A group puts hosted and mirror repositories of one format behind a single read URL. The first member that has an item answers; Maven metadata and npm package documents are merged.",
+      label: "An .npmrc pointing at a group",
+      terminal: (
+        <>
+          registry={origin}/npm/npm-group/
+          {"\n"}
+          <Comment># @acme packages from hosted, the rest from npmjs</Comment>
+        </>
+      ),
+    },
+  ];
+}
+
+/** The three repository kinds side by side (stacked on phones), each with a client example. */
+export function HowItWorks({ origin, host }: { origin: string; host: string }) {
   return (
     <Section label="how-title">
-      <SectionHead id="how-title" eyebrow="How it works" title="From one repository's protos to every build that needs them.">
-        The team that owns a contract publishes it. Everyone else depends on an exact version, the same way they depend on
-        a Maven library.
+      <SectionHead id="how-title" eyebrow="Repositories" title="Hosted, mirror and group, in every format.">
+        Each repository has one format and one kind. Point a build at a group once; admins can add, reorder or cache its
+        members later without anyone changing a build file.
       </SectionHead>
-      <ol className="grid overflow-hidden rounded-lg border md:grid-cols-3">
-        {STEPS.map((step) => (
+      <ul className="grid overflow-hidden rounded-lg border md:grid-cols-3">
+        {kinds(origin, host).map((kind) => (
           <li
-            key={step.n}
-            className="grid grid-rows-[auto_auto_auto_1fr] gap-2 border-t p-[22px] first:border-t-0 md:border-t-0 md:border-l md:first:border-l-0"
+            key={kind.name}
+            className="grid min-w-0 grid-rows-[auto_auto_auto_1fr] gap-2 border-t p-[22px] first:border-t-0 md:border-t-0 md:border-l md:first:border-l-0"
           >
-            <span className="font-mono text-xs font-medium text-muted-foreground">{step.n}</span>
-            <h3 className="text-base font-semibold">{step.title}</h3>
-            <p className="text-sm leading-relaxed text-muted-foreground">{step.text}</p>
-            <Terminal label={step.label} className="mt-2.5 self-end">
-              {step.terminal}
+            <span className="font-mono text-xs font-medium text-muted-foreground">{kind.name}</span>
+            <h3 className="text-base font-semibold">{kind.title}</h3>
+            <p className="text-sm leading-relaxed text-muted-foreground">{kind.text}</p>
+            <Terminal label={kind.label} className="mt-2.5 self-end">
+              {kind.terminal}
             </Terminal>
           </li>
         ))}
-      </ol>
+      </ul>
     </Section>
   );
 }

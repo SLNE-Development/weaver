@@ -1,0 +1,12 @@
+{
+  "name": "e2e-consumer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Installs packages through a Weaver npm repository in the e2e test.",
+  "license": "MIT",
+  "dependencies": {
+    "@e2e/hello": "1.1.0",
+    "@e2e/upstream-scoped": "1.0.0",
+    "upstream-pkg": "1.0.0"
+  }
+}

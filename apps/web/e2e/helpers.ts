@@ -1,5 +1,5 @@
 import type { Page } from "@playwright/test";
-import { makeSignature } from "better-auth/crypto";
+import { signSessionCookie } from "../src/test/session-cookie";
 import { AUTH_SECRET, BASE_URL, SESSION_COOKIE, sessionToken } from "./fixtures";
 
 /**
@@ -7,8 +7,7 @@ import { AUTH_SECRET, BASE_URL, SESSION_COOKIE, sessionToken } from "./fixtures"
  * `<token>.<HMAC-SHA256>`, URL-encoded, exactly as Better Auth signs it.
  */
 export async function sessionCookieValue(userId: string): Promise<string> {
-  const token = sessionToken(userId);
-  return encodeURIComponent(`${token}.${await makeSignature(token, AUTH_SECRET)}`);
+  return signSessionCookie(AUTH_SECRET, sessionToken(userId));
 }
 
 /** Signs the page's browser context in as the seeded user `userId`. */

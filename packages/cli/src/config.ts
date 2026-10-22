@@ -17,10 +17,10 @@ export const configSchema = z.object({
   outDir: z.string().min(1).optional(),
 });
 
-export type ProtoloomConfig = z.infer<typeof configSchema>;
+export type WeaverConfig = z.infer<typeof configSchema>;
 
 /** Reads and validates the JSON config file. */
-export async function loadConfig(path: string): Promise<ProtoloomConfig> {
+export async function loadConfig(path: string): Promise<WeaverConfig> {
   let text: string;
   try {
     text = await readFile(path, "utf8");
@@ -43,11 +43,11 @@ export async function loadConfig(path: string): Promise<ProtoloomConfig> {
   return parsed.data;
 }
 
-/** Registry base URL: `PROTOLOOM_URL` wins over the config's `url`; one of them is required. */
-export function resolveUrl(config: ProtoloomConfig, env: Record<string, string | undefined>): string {
-  const url = env.PROTOLOOM_URL || config.url;
+/** Registry base URL: `WEAVER_URL` wins over the config's `url`; one of them is required. */
+export function resolveUrl(config: WeaverConfig, env: Record<string, string | undefined>): string {
+  const url = env.WEAVER_URL || config.url;
   if (!url) {
-    throw new CliError("No registry url: set PROTOLOOM_URL or `url` in the config file");
+    throw new CliError("No registry url: set WEAVER_URL or `url` in the config file");
   }
   try {
     new URL(url);
@@ -58,6 +58,6 @@ export function resolveUrl(config: ProtoloomConfig, env: Record<string, string |
 }
 
 /** Absolute output directory: `--out` wins over the config's `outDir`, default `protos`. */
-export function resolveOutDir(config: ProtoloomConfig, flag: string | undefined, cwd: string): string {
+export function resolveOutDir(config: WeaverConfig, flag: string | undefined, cwd: string): string {
   return resolve(cwd, flag ?? config.outDir ?? "protos");
 }

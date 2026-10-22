@@ -18,8 +18,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug?: 
   return renderDocsOgCard(
     {
       eyebrow: doc ? `Docs · ${doc.section}` : "Docs",
-      title: doc?.title ?? "Protoloom docs",
-      subtitle: doc?.description ?? "Publish, version and fetch .proto files.",
+      title: doc?.title ?? "Weaver docs",
+      subtitle: doc?.description ?? "Host, mirror and group Maven, npm, Docker and proto repositories.",
       host: new URL(env.BETTER_AUTH_URL).host,
       path: doc?.path ?? "/docs",
     },

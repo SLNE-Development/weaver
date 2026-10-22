@@ -4,7 +4,7 @@ plugins {
     kotlin("plugin.serialization") version embeddedKotlinVersion
 }
 
-group = "dev.protoloom"
+group = "dev.slne.weaver"
 version = "0.1.0"
 
 repositories {
@@ -27,11 +27,11 @@ dependencies {
 
 gradlePlugin {
     plugins {
-        create("protoloom") {
-            id = "dev.protoloom"
-            implementationClass = "dev.protoloom.gradle.ProtoloomPlugin"
-            displayName = "Protoloom"
-            description = "Publishes .proto bundles to a Protoloom registry and fetches them with their dependencies."
+        create("weaver") {
+            id = "dev.slne.weaver"
+            implementationClass = "dev.slne.weaver.gradle.WeaverPlugin"
+            displayName = "Weaver"
+            description = "Publishes .proto bundles to a Weaver registry and fetches them with their dependencies."
         }
     }
 }
@@ -51,6 +51,6 @@ publishing {
 tasks.test {
     useJUnitPlatform()
     // TestKit builds start their own daemons; keep the test JVM from inheriting a registry URL or token.
-    environment.remove("PROTOLOOM_URL")
-    environment.remove("PROTOLOOM_TOKEN")
+    environment.remove("WEAVER_URL")
+    environment.remove("WEAVER_TOKEN")
 }

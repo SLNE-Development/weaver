@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { cn } from "@protoloom/ui/lib/utils"
+import { cn } from "@weaver/ui/lib/utils"
 import {
   ChevronDownIcon,
   ChevronLeftIcon,
@@ -13,7 +13,7 @@ import {
   type DayButton,
 } from "react-day-picker"
 
-import { Button, buttonVariants } from "@protoloom/ui/components/button"
+import { Button, buttonVariants } from "@weaver/ui/components/button"
 
 function Calendar({
   className,

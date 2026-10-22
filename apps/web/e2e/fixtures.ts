@@ -39,7 +39,14 @@ export const INVITES = {
 export const ARTIFACTS = {
   releases: "releases",
   snapshots: "snapshots",
+  /** A public proto mirror with caching off. */
+  mirror: "upstream-protos",
+  /** A public proto group of `releases` and the mirror. */
+  group: "all-protos",
 } as const;
+
+/** The upstream URL of the seeded proto mirror; nothing listens there. */
+export const MIRROR_UPSTREAM = "https://protos.example.invalid/api/v1";
 
 /** The seeded session token of `userId`. */
 export function sessionToken(userId: string): string {

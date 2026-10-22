@@ -2,8 +2,8 @@ import { cache } from "react";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { decideAccess, decideRoleAccess, loginPath } from "../lib/access";
-import { getSettings, type Principal, type Role, type ServerSettings } from "@protoloom/core";
-import type { Db } from "@protoloom/db";
+import { getSettings, type Principal, type StoreSet, type Role, type ServerSettings } from "@weaver/core";
+import type { Db } from "@weaver/db";
 import type { Auth } from "./auth";
 import { getServerContext } from "./context";
 import { loadActiveRole } from "./principal";
@@ -32,11 +32,11 @@ export interface AppSession {
  */
 export async function resolveAppSession(
   requestHeaders: Headers,
-  deps: { db: Db; auth: Auth } = getServerContext(),
+  deps: { db: Db; auth: Auth; stores: StoreSet } = getServerContext(),
 ): Promise<AppSession> {
   const [session, settings] = await Promise.all([
     deps.auth.api.getSession({ headers: requestHeaders }),
-    getSettings(deps.db),
+    getSettings(deps.db, { primaryStore: deps.stores.primary.id, configuredStores: deps.stores.configured() }),
   ]);
   const role = session ? await loadActiveRole(deps.db, session.user.id) : null;
   if (!session || !role) return { principal: { kind: "anonymous" }, user: null, settings };

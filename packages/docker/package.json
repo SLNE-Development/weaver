@@ -1,0 +1,49 @@
+{
+  "name": "@weaver/docker",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./browse": {
+      "types": "./dist/browse.d.ts",
+      "default": "./dist/browse.js"
+    },
+    "./client": {
+      "types": "./dist/client.d.ts",
+      "default": "./dist/client.js"
+    },
+    "./gc": {
+      "types": "./dist/gc.d.ts",
+      "default": "./dist/gc.js"
+    },
+    "./testing": {
+      "types": "./dist/testing.d.ts",
+      "default": "./dist/testing.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@weaver/config": "workspace:*",
+    "@types/node": "26.6.5",
+    "eslint": "10.13.0",
+    "typescript": "6.0.3",
+    "vitest": "5.0.5"
+  },
+  "dependencies": {
+    "@weaver/core": "workspace:*",
+    "@weaver/db": "workspace:*",
+    "drizzle-orm": "0.45.4",
+    "zod": "4.6.7"
+  }
+}

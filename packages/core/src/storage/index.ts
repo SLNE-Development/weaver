@@ -1,44 +1,63 @@
 import { createLocalStore } from "./local.js";
+import type { ObjectStore, StoreId, StoreSet } from "./object-store.js";
 import { createS3Store } from "./s3.js";
 
-/**
- * Storage for published archives. The registry writes keys as
- * `{repository}/{group}/{name}/{version}/{uuid}.tar.gz`, with a fresh uuid per build so a redeploy
- * never overwrites the blob it replaces. The key is stored on the build row (`build.storageKey`);
- * readers use that value and never derive keys.
- */
-export interface BlobStore {
-  put(key: string, data: Buffer): Promise<void>;
-  /** Resolves to `null` when the key does not exist. */
-  get(key: string): Promise<Buffer | null>;
-  /** Does not throw when the key does not exist. */
-  delete(key: string): Promise<void>;
-}
-
+export {
+  getBuffer,
+  putBuffer,
+  type ObjectDigests,
+  type ObjectInfo,
+  type ObjectRead,
+  type ObjectStore,
+  type PutResult,
+  STORE_IDS,
+  type StoreId,
+  type StoreSet,
+} from "./object-store.js";
 export { createLocalStore } from "./local.js";
 export { createS3Store, type S3StoreOptions } from "./s3.js";
 
-function required(env: NodeJS.ProcessEnv, name: string): string {
+/** Environment variables; any `NodeJS.ProcessEnv` fits, as does a plain record in tests. */
+type StorageEnv = Readonly<Record<string, string | undefined>>;
+
+function required(env: StorageEnv, name: string): string {
   const value = env[name];
   if (!value) throw new Error(`Missing required environment variable ${name}`);
   return value;
 }
 
-/** Builds the blob store selected by `STORAGE_DRIVER` (`local` or `s3`); throws on missing config. */
-export function createBlobStoreFromEnv(env: NodeJS.ProcessEnv): BlobStore {
+/**
+ * Builds every store the environment configures: `local` when `STORAGE_LOCAL_PATH` is set, `s3`
+ * when `S3_BUCKET` is set (then `S3_REGION` and credentials are required). `STORAGE_DRIVER`
+ * (`local` or `s3`) names the primary store, which must be configured. Throws on missing config.
+ */
+export function createStoreSetFromEnv(env: StorageEnv): StoreSet {
   const driver = env.STORAGE_DRIVER;
-  switch (driver) {
-    case "local":
-      return createLocalStore(required(env, "STORAGE_LOCAL_PATH"));
-    case "s3":
-      return createS3Store({
+  if (driver !== "local" && driver !== "s3") {
+    throw new Error(`Invalid or missing STORAGE_DRIVER "${driver ?? ""}": expected "local" or "s3"`);
+  }
+
+  const stores = new Map<StoreId, ObjectStore>();
+  if (env.STORAGE_LOCAL_PATH) stores.set("local", createLocalStore(env.STORAGE_LOCAL_PATH));
+  if (env.S3_BUCKET) {
+    stores.set(
+      "s3",
+      createS3Store({
         endpoint: env.S3_ENDPOINT || undefined,
-        bucket: required(env, "S3_BUCKET"),
+        bucket: env.S3_BUCKET,
         region: required(env, "S3_REGION"),
         accessKeyId: required(env, "S3_ACCESS_KEY_ID"),
         secretAccessKey: required(env, "S3_SECRET_ACCESS_KEY"),
-      });
-    default:
-      throw new Error(`Invalid or missing STORAGE_DRIVER "${driver ?? ""}": expected "local" or "s3"`);
+      }),
+    );
   }
+
+  const primary = stores.get(driver);
+  if (!primary) required(env, driver === "local" ? "STORAGE_LOCAL_PATH" : "S3_BUCKET");
+  const ids = (["local", "s3"] as const).filter((id) => stores.has(id));
+  return {
+    primary: primary!,
+    get: (id) => stores.get(id) ?? null,
+    configured: () => [...ids],
+  };
 }

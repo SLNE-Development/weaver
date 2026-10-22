@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { Role } from "@protoloom/core";
+import type { Role } from "@weaver/core";
 import { isValidGroupPrefix } from "./names";
 
 export type KeyAccess = "read" | "write";

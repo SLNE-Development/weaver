@@ -10,9 +10,9 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@protoloom/ui/components/command";
-import { Button } from "@protoloom/ui/components/button";
-import { Kbd } from "@protoloom/ui/components/kbd";
+} from "@weaver/ui/components/command";
+import { Button } from "@weaver/ui/components/button";
+import { Kbd } from "@weaver/ui/components/kbd";
 import type { DocSearchEntry } from "@/lib/docs";
 
 /**

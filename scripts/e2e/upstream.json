@@ -1,0 +1,4 @@
+{
+  "repos": [{ "name": "proto-upstream", "format": "proto", "kind": "hosted", "visibility": "public" }],
+  "tokens": { "write": [{ "repository": "proto-upstream", "access": "write" }] }
+}

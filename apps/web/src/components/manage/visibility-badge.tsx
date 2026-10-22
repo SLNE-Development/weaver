@@ -1,5 +1,5 @@
 import { GlobeIcon, LockIcon } from "lucide-react";
-import { Badge } from "@protoloom/ui/components/badge";
+import { Badge } from "@weaver/ui/components/badge";
 
 /** `public` / `private` marker of a repository. */
 export function VisibilityBadge({ visibility }: { visibility: "public" | "private" }) {

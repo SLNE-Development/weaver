@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@protoloom/ui/components/button";
-import { Spinner } from "@protoloom/ui/components/spinner";
+import { Button } from "@weaver/ui/components/button";
+import { Spinner } from "@weaver/ui/components/spinner";
 import { PROVIDER_NAMES, signInWith, type ProviderId } from "@/lib/auth-client";
 import { ProviderIcon } from "./provider-icon";
 

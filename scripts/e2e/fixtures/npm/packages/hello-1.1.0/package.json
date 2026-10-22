@@ -1,0 +1,7 @@
+{
+  "name": "@e2e/hello",
+  "version": "1.1.0",
+  "description": "Hosted e2e package, second release.",
+  "main": "index.js",
+  "license": "MIT"
+}

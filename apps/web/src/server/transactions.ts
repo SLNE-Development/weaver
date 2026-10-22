@@ -1,5 +1,5 @@
 import { AsyncLocalStorage } from "node:async_hooks";
-import type { Db, Tx } from "@protoloom/db";
+import type { Db, Tx } from "@weaver/db";
 
 /**
  * Wraps `db` so that every `db.transaction(...)` started through the wrapper (Better Auth's drizzle

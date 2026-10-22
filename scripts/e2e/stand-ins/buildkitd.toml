@@ -1,0 +1,4 @@
+# buildkitd config of the e2e buildx builder: Weaver listens on plain http on localhost.
+# docker.sh rewrites the port when E2E_PORT is not 3100.
+[registry."localhost:3100"]
+  http = true

@@ -1,4 +1,4 @@
-// Applies pending drizzle migrations. Lives next to @protoloom/db's dist/ and drizzle/ (see Dockerfile).
+// Applies pending drizzle migrations. Lives next to @weaver/db's dist/ and drizzle/ (see Dockerfile).
 import { createDb, migrate } from "./dist/index.js";
 
 const url = process.env.DATABASE_URL;

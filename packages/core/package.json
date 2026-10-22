@@ -1,5 +1,5 @@
 {
-  "name": "@protoloom/core",
+  "name": "@weaver/core",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -17,6 +17,10 @@
     "./coordinates": {
       "types": "./dist/coordinates.d.ts",
       "default": "./dist/coordinates.js"
+    },
+    "./cleanup-kinds": {
+      "types": "./dist/cleanup/kinds.d.ts",
+      "default": "./dist/cleanup/kinds.js"
     }
   },
   "scripts": {
@@ -26,16 +30,18 @@
     "test": "vitest run"
   },
   "devDependencies": {
-    "@protoloom/config": "workspace:*",
     "@types/node": "26.6.5",
+    "@weaver/config": "workspace:*",
     "eslint": "10.13.0",
+    "testcontainers": "12.2.1",
     "typescript": "6.0.3",
     "vitest": "5.0.5"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1154.0",
+    "@aws-sdk/lib-storage": "3.1154.0",
     "@bufbuild/buf": "1.74.0",
-    "@protoloom/db": "workspace:*",
+    "@weaver/db": "workspace:*",
     "drizzle-orm": "0.45.4",
     "tar": "7.5.22",
     "zod": "4.6.7"

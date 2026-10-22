@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { CheckIcon, CopyIcon } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@protoloom/ui/components/button";
-import { Spinner } from "@protoloom/ui/components/spinner";
+import { Button } from "@weaver/ui/components/button";
+import { Spinner } from "@weaver/ui/components/spinner";
 import { useTRPCClient } from "@/trpc/client";
 import { copyText } from "./copy-button";
 

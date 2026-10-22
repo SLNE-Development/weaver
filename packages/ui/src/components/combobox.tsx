@@ -2,16 +2,16 @@
 
 import * as React from "react"
 import { Combobox as ComboboxPrimitive } from "@base-ui/react"
-import { cn } from "@protoloom/ui/lib/utils"
+import { cn } from "@weaver/ui/lib/utils"
 import { CheckIcon, ChevronDownIcon, XIcon } from "lucide-react"
 
-import { Button } from "@protoloom/ui/components/button"
+import { Button } from "@weaver/ui/components/button"
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
-} from "@protoloom/ui/components/input-group"
+} from "@weaver/ui/components/input-group"
 
 const Combobox = ComboboxPrimitive.Root
 

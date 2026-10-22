@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Badge } from "@protoloom/ui/components/badge";
-import { Button } from "@protoloom/ui/components/button";
-import { Spinner } from "@protoloom/ui/components/spinner";
+import { Badge } from "@weaver/ui/components/badge";
+import { Button } from "@weaver/ui/components/button";
+import { Spinner } from "@weaver/ui/components/spinner";
 import { ProviderIcon } from "@/components/provider-icon";
 import { PROVIDER_NAMES, authClient, type ProviderId } from "@/lib/auth-client";
 
@@ -16,7 +16,7 @@ export interface LinkedAccount {
 }
 
 const LINK_ERRORS: Record<string, string> = {
-  account_already_linked_to_different_user: "That account is already connected to another Protoloom user.",
+  account_already_linked_to_different_user: "That account is already connected to another Weaver user.",
 };
 
 /**

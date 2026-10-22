@@ -1,0 +1,7 @@
+{
+  "name": "@e2e/pub-pnpm",
+  "version": "1.0.0",
+  "description": "Published by the pnpm client.",
+  "main": "index.js",
+  "license": "MIT"
+}

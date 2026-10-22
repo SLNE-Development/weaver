@@ -10,8 +10,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@protoloom/ui/components/alert-dialog";
-import { Spinner } from "@protoloom/ui/components/spinner";
+} from "@weaver/ui/components/alert-dialog";
+import { Spinner } from "@weaver/ui/components/spinner";
 
 /**
  * A confirmation for a consequential action. Stays open while `onConfirm` runs and closes when it

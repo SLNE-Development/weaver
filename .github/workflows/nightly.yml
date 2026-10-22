@@ -1,0 +1,34 @@
+name: Nightly
+
+# Runs the maven, npm and docker e2e flows against the real upstreams (Maven Central,
+# registry.npmjs.org, Docker Hub), including the 2 GiB Docker layer. Every other workflow uses
+# local stand-in upstreams; this is the only one that contacts public registries.
+# Optional secrets DOCKERHUB_USERNAME / DOCKERHUB_TOKEN lift Docker Hub's anonymous pull limit.
+on:
+  schedule:
+    - cron: "23 4 * * *"
+  workflow_dispatch:
+    inputs:
+      large:
+        description: "Push and pull a 2 GiB Docker layer"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nightly
+  cancel-in-progress: false
+
+jobs:
+  e2e:
+    name: E2E (real upstreams)
+    uses: ./.github/workflows/e2e.yml
+    with:
+      upstreams: real
+      # Scheduled runs have no inputs and always include the large layer.
+      large: ${{ github.event_name == 'schedule' || inputs.large }}
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}

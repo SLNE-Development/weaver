@@ -1,4 +1,5 @@
 import {
+  BarChart3Icon,
   DatabaseIcon,
   FolderSearchIcon,
   KeyRoundIcon,
@@ -18,5 +19,6 @@ export const NAV_ICONS: Record<NavItem["id"], LucideIcon> = {
   keys: KeyRoundIcon,
   users: UsersIcon,
   settings: SettingsIcon,
+  usage: BarChart3Icon,
   audit: ScrollTextIcon,
 };

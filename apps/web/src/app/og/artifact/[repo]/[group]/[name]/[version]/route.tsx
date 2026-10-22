@@ -20,7 +20,7 @@ function genericCardPng(): Promise<Uint8Array> {
 
 /**
  * Share card (PNG, 1200×630) of an artifact version; `version` may be `latest`. Private and unknown
- * artifacts get the generic Protoloom card, served with the same status and headers as a real
+ * artifacts get the generic Weaver card, served with the same status and headers as a real
  * card, so responses don't reveal which artifacts exist.
  */
 export async function GET(_req: Request, { params }: Context): Promise<Response> {

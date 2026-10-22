@@ -1,24 +1,25 @@
-# protoloom
+# weaver
 
-Command-line client for [Protoloom](https://github.com/SLNE-Development/protoloom), a self-hosted registry
-for `.proto` files. `protoloom fetch` downloads the proto bundles your project depends on, with their
-transitive dependencies, into a local directory.
+Command-line client for the proto repositories of [Weaver](https://github.com/SLNE-Development/weaver),
+a self-hosted repository for Maven, npm, Docker/OCI and proto artifacts. `weaver fetch` downloads the proto
+bundles your project depends on, with their transitive dependencies, into a local directory. Hosted, mirror
+and group proto repositories all work; list a group to read through all of its members.
 
 Requires Node.js 22.3 or newer.
 
 ## Install
 
 ```sh
-npm i -D protoloom
+npm i -D @slne/weaver-cli
 # or
-pnpm add -D protoloom
+pnpm add -D @slne/weaver-cli
 ```
 
-Or run it without installing: `npx protoloom fetch`.
+Or run it without installing: `npx @slne/weaver-cli fetch`.
 
 ## Configure
 
-Create `protoloom.json` next to your `package.json`:
+Create `weaver.json` next to your `package.json`:
 
 ```json
 {
@@ -33,24 +34,24 @@ Create `protoloom.json` next to your `package.json`:
 | `repositories` | Repositories searched for each dependency, in order. |
 | `dependencies` | Coordinates `group:name:version`. |
 | `outDir` | Output directory, default `./protos`. |
-| `url` | Registry base URL. Optional; `PROTOLOOM_URL` takes precedence. |
+| `url` | Registry base URL. Optional; `WEAVER_URL` takes precedence. |
 
 ## Run
 
 ```sh
-export PROTOLOOM_URL=https://protos.example.com
-export PROTOLOOM_TOKEN=pl_...     # API key; only needed for private repositories
-npx protoloom fetch [--config protoloom.json] [--out ./protos]
+export WEAVER_URL=https://weaver.example.com
+export WEAVER_TOKEN=<api key>  # only needed for private repositories
+npx @slne/weaver-cli fetch [--config weaver.json] [--out ./protos]
 ```
 
 A typical `package.json` script:
 
 ```json
-{ "scripts": { "protos": "protoloom fetch" } }
+{ "scripts": { "protos": "weaver fetch" } }
 ```
 
-Downloads are verified against their SHA-256 and cached in `node_modules/.cache/protoloom`
-(or `~/.cache/protoloom` outside a Node project).
+Downloads are verified against their SHA-256 and cached in `node_modules/.cache/weaver`
+(or `~/.cache/weaver` outside a Node project).
 
 ## License
 

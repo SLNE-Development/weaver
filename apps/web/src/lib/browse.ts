@@ -17,31 +17,35 @@ export function archiveHref(repository: string, group: string, name: string, ver
   return `/api/v1/repos/${r}/artifacts/${g}/${n}/${v}/archive`;
 }
 
-/** What a usage snippet needs: the public base URL, the repository and the `group:name:version`. */
+/**
+ * What a usage snippet needs: the public base URL, the repository (hosted, mirror or group) and,
+ * for a version's snippet, the `group:name:version`. Without a coordinate the snippet sets up the
+ * repository only.
+ */
 export interface SnippetInput {
   url: string;
   repository: string;
-  coordinate: string;
+  coordinate?: string;
 }
 
-/** Gradle (Kotlin DSL) setup that fetches the artifact with the Protoloom plugin. */
+/** Gradle (Kotlin DSL) setup with the Weaver plugin: the repository, and the artifact or a commented template. */
 export function gradleSnippet({ url, repository, coordinate }: SnippetInput): string {
   return [
-    "protoloom {",
+    "weaver {",
     `    url = "${url}"`,
-    '    token = providers.environmentVariable("PROTOLOOM_TOKEN")',
+    '    token = providers.environmentVariable("WEAVER_TOKEN")',
     `    repositories("${repository}")`,
     "}",
     "",
     "dependencies {",
-    `    protoloom("${coordinate}")`,
+    coordinate === undefined ? '    // weaver("group:name:version")' : `    weaver("${coordinate}")`,
     "}",
   ].join("\n");
 }
 
-/** A `protoloom.json` for `protoloom fetch` that fetches the artifact into `./protos`. */
-export function protoloomJsonSnippet({ url, repository, coordinate }: SnippetInput): string {
-  return JSON.stringify({ url, repositories: [repository], dependencies: [coordinate], outDir: "./protos" }, null, 2);
+/** A `weaver.json` for `weaver fetch` that fetches into `./protos`: the artifact, or no dependencies yet. */
+export function weaverJsonSnippet({ url, repository, coordinate }: SnippetInput): string {
+  return JSON.stringify({ url, repositories: [repository], dependencies: coordinate === undefined ? [] : [coordinate], outDir: "./protos" }, null, 2);
 }
 
 /** A node of a version's file tree. Folder names may span several path segments (collapsed chains). */
@@ -105,11 +109,20 @@ export function firstFile(nodes: FileTreeNode[]): string | null {
   return null;
 }
 
+/** The artifacts whose `group:name` contains `q` (case-insensitive); all of them for an empty `q`. */
+export function filterArtifacts<T extends { group: string; name: string }>(artifacts: T[], q: string): T[] {
+  const needle = q.trim().toLowerCase();
+  if (needle === "") return artifacts;
+  return artifacts.filter((a) => `${a.group}:${a.name}`.toLowerCase().includes(needle));
+}
+
 /** Human-readable size in binary units. */
 export function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KiB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MiB`;
+  if (bytes < 1024 ** 3) return `${(bytes / (1024 * 1024)).toFixed(1)} MiB`;
+  if (bytes < 1024 ** 4) return `${(bytes / 1024 ** 3).toFixed(1)} GiB`;
+  return `${(bytes / 1024 ** 4).toFixed(1)} TiB`;
 }
 
 const RELATIVE = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
@@ -140,7 +153,7 @@ export function formatTimestamp(date: Date): string {
 /** The site-wide share card (the root `opengraph-image`), used where an artifact card would disclose too much. */
 export const GENERIC_SHARE_IMAGE = "/opengraph-image";
 
-const GENERIC_DESCRIPTION = "Protobuf artifacts on this Protoloom.";
+const GENERIC_DESCRIPTION = "Protobuf artifacts on this Weaver.";
 const PRIVATE_DESCRIPTION = "Protobuf artifacts in a private repository.";
 
 /** The `pageMetadata()` input of a browse page. */
@@ -183,7 +196,7 @@ export function artifactMetadataInput(input: {
   ];
   return {
     title: coordinate,
-    description: `${coordinate} in the ${repository} repository: ${parts.join(", ")}. Fetch it with Gradle or the protoloom CLI.`,
+    description: `${coordinate} in the ${repository} repository: ${parts.join(", ")}. Fetch it with Gradle or the weaver CLI.`,
     path,
     image: `/og/artifact/${[repository, group, name, version].map(encodeURIComponent).join("/")}`,
   };
@@ -211,7 +224,7 @@ export function listingMetadataInput(input: {
   const title = artifact ? `${group}:${name}` : repository;
   if (visibility === "private") return { title, description: PRIVATE_DESCRIPTION, path, image, noindex: true };
   const description = artifact
-    ? `Versions of ${title} in the ${repository} repository, with proto files and usage for Gradle and the protoloom CLI.`
+    ? `Versions of ${title} in the ${repository} repository, with proto files and usage for Gradle and the weaver CLI.`
     : `${input.description ? `${input.description}. ` : ""}Protobuf artifacts in the ${repository} repository.`;
   return { title, description, path, image };
 }

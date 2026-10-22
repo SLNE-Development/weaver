@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { RegistryError, type Registry, type VersionInfo } from "@protoloom/core";
+import { RegistryError, type Registry, type VersionInfo } from "@weaver/core";
 import type { ServerContext } from "@/server/context";
 import { GET } from "./artifact/[repo]/[group]/[name]/[version]/route";
 

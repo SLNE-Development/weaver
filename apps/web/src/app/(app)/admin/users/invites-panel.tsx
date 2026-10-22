@@ -3,12 +3,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { MailPlusIcon, ShieldAlertIcon } from "lucide-react";
 import { toast } from "sonner";
-import { Badge } from "@protoloom/ui/components/badge";
-import { Button } from "@protoloom/ui/components/button";
-import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@protoloom/ui/components/empty";
-import { Skeleton } from "@protoloom/ui/components/skeleton";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@protoloom/ui/components/table";
-import { cn } from "@protoloom/ui/lib/utils";
+import { Badge } from "@weaver/ui/components/badge";
+import { Button } from "@weaver/ui/components/button";
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@weaver/ui/components/empty";
+import { Skeleton } from "@weaver/ui/components/skeleton";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@weaver/ui/components/table";
+import { cn } from "@weaver/ui/lib/utils";
 import { useTRPC, type RouterOutputs } from "@/trpc/client";
 import { ConfirmDialog } from "../_components/confirm-dialog";
 import { useDialogTarget } from "../_components/use-dialog-target";

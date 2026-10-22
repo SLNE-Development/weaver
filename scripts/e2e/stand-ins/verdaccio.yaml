@@ -1,0 +1,27 @@
+# npm stand-in upstream for the e2e harness: no uplinks, so nothing reaches registry.npmjs.org.
+# Anyone may read; publishing needs a user (created by the npm e2e script via PUT /-/user/...).
+storage: /verdaccio/storage/data
+plugins: /verdaccio/plugins
+auth:
+  htpasswd:
+    file: /verdaccio/storage/htpasswd
+    max_users: 100
+uplinks: {}
+packages:
+  '@*/*':
+    access: $all
+    publish: $authenticated
+    unpublish: $authenticated
+  '**':
+    access: $all
+    publish: $authenticated
+    unpublish: $authenticated
+server:
+  keepAliveTimeout: 60
+middlewares:
+  audit:
+    enabled: true
+log:
+  type: stdout
+  format: pretty
+  level: warn

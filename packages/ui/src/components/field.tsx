@@ -2,10 +2,10 @@
 
 import { useMemo } from "react"
 import { cva, type VariantProps } from "class-variance-authority"
-import { cn } from "@protoloom/ui/lib/utils"
+import { cn } from "@weaver/ui/lib/utils"
 
-import { Label } from "@protoloom/ui/components/label"
-import { Separator } from "@protoloom/ui/components/separator"
+import { Label } from "@weaver/ui/components/label"
+import { Separator } from "@weaver/ui/components/separator"
 
 function FieldSet({ className, ...props }: React.ComponentProps<"fieldset">) {
   return (

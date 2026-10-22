@@ -1,13 +1,13 @@
 import { and, eq, gt, inArray, isNull, like } from "drizzle-orm";
 import type { BetterAuthOptions, GenericEndpointContext } from "better-auth";
 import { APIError } from "better-auth/api";
-import { recordAudit } from "@protoloom/core";
-import { invite, user, type Db, type Tx } from "@protoloom/db";
+import { recordAudit } from "@weaver/core";
+import { invite, user, type Db, type Tx } from "@weaver/db";
 import { INVITE_COOKIE, hashInviteToken, readInviteToken } from "./invite";
 import { ROLES, effectiveRole, isRole, parseRoles } from "./roles";
 
 /** Shown when someone without an invite tries to create an account. */
-export const INVITE_REQUIRED_MESSAGE = "You need an invite to join this Protoloom.";
+export const INVITE_REQUIRED_MESSAGE = "You need an invite to join this Weaver.";
 
 type Decision = { provider: string } & ({ kind: "initial-admin" } | { kind: "invite"; inviteId: string });
 

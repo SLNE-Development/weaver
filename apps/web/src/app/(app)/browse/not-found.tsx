@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { PackageSearchIcon } from "lucide-react";
-import { Button } from "@protoloom/ui/components/button";
+import { Button } from "@weaver/ui/components/button";
 import { StatusPage } from "@/components/status-page";
 
 /** 404 of the artifact browser: an unknown repository, artifact or version, or one the visitor can't read (they look the same). */

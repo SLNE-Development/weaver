@@ -1,13 +1,13 @@
 import { TRPCError } from "@trpc/server";
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { and, asc, desc, eq, inArray } from "drizzle-orm";
 import { z } from "zod";
-import { maxKeyAccess, recordAudit, type KeyPermission } from "@protoloom/core";
-import { apikey, apiKeyPermission, repository, user } from "@protoloom/db";
+import { recordAudit, type KeyPermission } from "@weaver/core";
+import { apikey, repoPermission, repository, user } from "@weaver/db";
 import { authedProcedure, router } from "../init";
-import { groupPrefix, notFound, repositoryName } from "../helpers";
+import { issueApiKey, issueKeyInput } from "../../api-keys";
+import { notFound } from "../helpers";
 
-/** Prefix of every API key secret Protoloom issues, so leaked keys are recognisable. */
-export const API_KEY_PREFIX = "pl_";
+export { API_KEY_PREFIX } from "../../api-keys";
 
 /** An API key as listed: never the secret, only its first characters (`start`). */
 export interface ApiKeySummary {
@@ -23,12 +23,6 @@ export interface ApiKeySummary {
   createdAt: Date;
   permissions: KeyPermission[];
 }
-
-const permissionInput = z.object({
-  repository: repositoryName,
-  groupPrefix,
-  access: z.enum(["read", "write"]),
-});
 
 /** Personal API keys: create (the secret is shown once), list, revoke. */
 export const keysRouter = router({
@@ -59,78 +53,43 @@ export const keysRouter = router({
           ? []
           : await ctx.db
               .select({
-                apiKeyId: apiKeyPermission.apiKeyId,
-                repository: apiKeyPermission.repository,
-                groupPrefix: apiKeyPermission.groupPrefix,
-                access: apiKeyPermission.access,
+                apiKeyId: repoPermission.apiKeyId,
+                repositoryId: repoPermission.repositoryId,
+                repository: repository.name,
+                groupPrefix: repoPermission.groupPrefix,
+                access: repoPermission.access,
               })
-              .from(apiKeyPermission)
+              .from(repoPermission)
+              .innerJoin(repository, eq(repository.id, repoPermission.repositoryId))
               .where(
                 inArray(
-                  apiKeyPermission.apiKeyId,
+                  repoPermission.apiKeyId,
                   keys.map((k) => k.id),
                 ),
-              );
+              )
+              .orderBy(asc(repoPermission.id));
       return keys.map((key) => ({
         ...key,
         enabled: key.enabled ?? true,
         permissions: permissions
           .filter((p) => p.apiKeyId === key.id)
-          .map(({ repository: repo, groupPrefix: prefix, access }) => ({ repository: repo, groupPrefix: prefix, access })),
+          .map(({ repositoryId, repository: repo, groupPrefix: prefix, access }) => ({
+            repositoryId,
+            repository: repo,
+            groupPrefix: prefix,
+            access,
+          })),
       }));
     }),
 
   /**
    * Creates a key for the caller and returns `{ id, key }`; the only time the secret is returned.
-   * Viewers may only grant `read` (`FORBIDDEN` otherwise); unknown repositories are `BAD_REQUEST`.
+   * Viewers may only grant `read` (`FORBIDDEN` otherwise); unknown repositories and entries that
+   * can never grant anything (write on a group, a group prefix outside proto hosted/mirror) are `BAD_REQUEST`.
    */
   create: authedProcedure
-    .input(
-      z.object({
-        name: z.string().trim().min(1).max(32),
-        expiresInDays: z.number().int().min(1).max(365).optional(),
-        permissions: z.array(permissionInput).min(1).max(100),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const { principal } = ctx;
-      if (maxKeyAccess(principal.role) === "read" && input.permissions.some((p) => p.access === "write")) {
-        throw new TRPCError({ code: "FORBIDDEN", message: "Viewers can only create read-only keys" });
-      }
-      const names = [...new Set(input.permissions.map((p) => p.repository))];
-      const known = new Set(
-        (await ctx.db.select({ name: repository.name }).from(repository).where(inArray(repository.name, names))).map((r) => r.name),
-      );
-      const unknown = names.filter((name) => !known.has(name));
-      if (unknown.length > 0) {
-        throw new TRPCError({ code: "BAD_REQUEST", message: `Unknown repositories: ${unknown.join(", ")}` });
-      }
-
-      const created = await ctx.auth.api.createApiKey({
-        body: {
-          userId: principal.userId,
-          name: input.name,
-          prefix: API_KEY_PREFIX,
-          expiresIn: input.expiresInDays ? input.expiresInDays * 86_400 : null,
-        },
-      });
-      try {
-        await ctx.db.transaction(async (tx) => {
-          await tx.insert(apiKeyPermission).values(input.permissions.map((p) => ({ ...p, apiKeyId: created.id })));
-          await recordAudit(tx, {
-            actor: principal,
-            action: "key.create",
-            target: created.id,
-            details: { name: input.name, expiresInDays: input.expiresInDays ?? null, permissions: input.permissions },
-          });
-        });
-      } catch (error) {
-        // A key without its permission rows must not survive.
-        await ctx.db.delete(apikey).where(eq(apikey.id, created.id));
-        throw error;
-      }
-      return { id: created.id, key: created.key };
-    }),
+    .input(issueKeyInput)
+    .mutation(({ ctx, input }) => issueApiKey({ db: ctx.db, auth: ctx.auth }, ctx.principal, input)),
 
   /** Revokes (deletes) one of the caller's keys, or any key for admins; `NOT_FOUND` otherwise. */
   revoke: authedProcedure.input(z.object({ id: z.string().min(1).max(200) })).mutation(async ({ ctx, input }) => {

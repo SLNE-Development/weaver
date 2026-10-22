@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { and, asc, desc, eq, like, lt, or, sql, type SQL } from "drizzle-orm";
 import { z } from "zod";
-import { apikey, auditEvent, user } from "@protoloom/db";
+import { apikey, auditEvent, user } from "@weaver/db";
 import { adminProcedure, router } from "../init";
 import { escapeLike } from "../helpers";
 

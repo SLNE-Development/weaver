@@ -1,0 +1,89 @@
+name: E2E
+
+# Reusable workflow: boots the production image with docker-compose.prod.yml and drives stock clients
+# (Gradle plugin, weaver CLI, mvn, Gradle, npm, pnpm, yarn, bun, docker, buildx, podman, helm)
+# through scripts/e2e/run.sh, one matrix job per format.
+#   upstreams: local  stand-in upstreams in compose (every CI and release run)
+#   upstreams: real   Maven Central, registry.npmjs.org and Docker Hub (nightly only; no proto)
+# Third-party actions are pinned to commit SHAs; the comment names the release.
+on:
+  workflow_call:
+    inputs:
+      upstreams:
+        description: "local (stand-in upstreams) or real (public registries)"
+        type: string
+        default: local
+      large:
+        description: "Push and pull a 2 GiB Docker layer (E2E_LARGE=1)"
+        type: boolean
+        default: false
+    secrets:
+      DOCKERHUB_USERNAME:
+        required: false
+      DOCKERHUB_TOKEN:
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    name: E2E ${{ matrix.format }} (${{ inputs.upstreams }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        format: ${{ fromJSON(inputs.upstreams == 'real' && '["maven","npm","docker"]' || '["platform","proto","maven","npm","docker"]') }}
+    env:
+      # Builds never need secrets; runtime validation still runs when the containers start.
+      SKIP_ENV_VALIDATION: "1"
+      TURBO_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+      - name: Enable pnpm (version from package.json packageManager)
+        run: corepack enable
+      - name: Cache the pnpm store
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.local/share/pnpm/store
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: pnpm-${{ runner.os }}-
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
+      - run: pnpm install --frozen-lockfile
+      # The CLI (proto fetch), the db package and everything web depends on (the e2e seed bundles them).
+      - run: pnpm turbo run build --filter=@slne/weaver-cli --filter=@weaver/db --filter=web^...
+      - name: Install Chromium for the npm web login
+        if: matrix.format == 'npm'
+        run: pnpm --filter web exec playwright install --with-deps chromium
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - name: Build the image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: docker/Dockerfile
+          load: true
+          tags: weaver:e2e
+          cache-from: type=gha,scope=e2e
+          cache-to: type=gha,scope=e2e,mode=max
+      - name: Client versions
+        run: |
+          mvn -v
+          podman --version
+          helm version
+      - name: Run scripts/e2e/run.sh
+        env:
+          E2E_IMAGE: weaver:e2e
+          E2E_LARGE: ${{ inputs.large && '1' || '' }}
+          UPSTREAMS: ${{ inputs.upstreams }}
+          FORMAT: ${{ matrix.format }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: bash scripts/e2e/run.sh --upstreams="$UPSTREAMS" "$FORMAT"

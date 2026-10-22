@@ -2,15 +2,15 @@ services:
   postgres:
     image: postgres:17-alpine
     environment:
-      POSTGRES_USER: protoloom
-      POSTGRES_PASSWORD: protoloom
-      POSTGRES_DB: protoloom
+      POSTGRES_USER: weaver
+      POSTGRES_PASSWORD: weaver
+      POSTGRES_DB: weaver
     ports:
       - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U protoloom -d protoloom"]
+      test: ["CMD-SHELL", "pg_isready -U weaver -d weaver"]
       interval: 2s
       timeout: 5s
       retries: 15
@@ -28,7 +28,9 @@ services:
       timeout: 5s
       retries: 15
 
-  # S3-compatible object storage for development (MinIO no longer publishes images).
+  # S3-compatible object storage for development (MinIO no longer publishes images), bucket "weaver".
+  # Dual storage (local primary + S3 for mirror caches): in .env keep STORAGE_DRIVER=local and
+  # STORAGE_LOCAL_PATH, and set S3_ENDPOINT=http://localhost:9000, S3_BUCKET=weaver, S3_REGION and the keys.
   seaweedfs:
     image: chrislusf/seaweedfs:4.48
     command: server -s3 -s3.port=9000 -dir=/data
@@ -53,7 +55,7 @@ services:
       - /bin/sh
       - -c
       - |
-        out=$$(echo 's3.bucket.create -name protoloom' | weed shell -master=seaweedfs:9333 2>&1)
+        out=$$(echo 's3.bucket.create -name weaver' | weed shell -master=seaweedfs:9333 2>&1)
         echo "$$out"
         case "$$out" in
           *"created bucket"*|*"already exists"*) exit 0 ;;

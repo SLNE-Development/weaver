@@ -1,5 +1,5 @@
 import { count, desc, eq, inArray } from "drizzle-orm";
-import { artifact, build, user, version } from "@protoloom/db";
+import { protoArtifact, protoBuild, protoVersion, user } from "@weaver/db";
 import { browseProcedure, router } from "../init";
 import { browsableRepositories, canReadGroup, coordinateText } from "../helpers";
 
@@ -33,32 +33,32 @@ export const dashboardRouter = router({
 
     const [artifactRows, versionRows, recent] = await Promise.all([
       ctx.db
-        .select({ repositoryId: artifact.repositoryId, group: artifact.group, artifacts: count() })
-        .from(artifact)
-        .where(inArray(artifact.repositoryId, ids))
-        .groupBy(artifact.repositoryId, artifact.group),
+        .select({ repositoryId: protoArtifact.repositoryId, group: protoArtifact.group, artifacts: count() })
+        .from(protoArtifact)
+        .where(inArray(protoArtifact.repositoryId, ids))
+        .groupBy(protoArtifact.repositoryId, protoArtifact.group),
       ctx.db
-        .select({ repositoryId: artifact.repositoryId, group: artifact.group, versions: count(version.id) })
-        .from(version)
-        .innerJoin(artifact, eq(artifact.id, version.artifactId))
-        .where(inArray(artifact.repositoryId, ids))
-        .groupBy(artifact.repositoryId, artifact.group),
+        .select({ repositoryId: protoArtifact.repositoryId, group: protoArtifact.group, versions: count(protoVersion.id) })
+        .from(protoVersion)
+        .innerJoin(protoArtifact, eq(protoArtifact.id, protoVersion.artifactId))
+        .where(inArray(protoArtifact.repositoryId, ids))
+        .groupBy(protoArtifact.repositoryId, protoArtifact.group),
       ctx.db
         .select({
-          repositoryId: artifact.repositoryId,
-          group: artifact.group,
-          name: artifact.name,
-          version: version.version,
-          buildNumber: build.buildNumber,
+          repositoryId: protoArtifact.repositoryId,
+          group: protoArtifact.group,
+          name: protoArtifact.name,
+          version: protoVersion.version,
+          buildNumber: protoBuild.buildNumber,
           publisherName: user.name,
-          createdAt: build.createdAt,
+          createdAt: protoBuild.createdAt,
         })
-        .from(build)
-        .innerJoin(version, eq(version.id, build.versionId))
-        .innerJoin(artifact, eq(artifact.id, version.artifactId))
-        .leftJoin(user, eq(user.id, build.publishedByUserId))
-        .where(inArray(artifact.repositoryId, ids))
-        .orderBy(desc(build.createdAt), desc(build.buildNumber))
+        .from(protoBuild)
+        .innerJoin(protoVersion, eq(protoVersion.id, protoBuild.versionId))
+        .innerJoin(protoArtifact, eq(protoArtifact.id, protoVersion.artifactId))
+        .leftJoin(user, eq(user.id, protoBuild.publishedByUserId))
+        .where(inArray(protoArtifact.repositoryId, ids))
+        .orderBy(desc(protoBuild.createdAt), desc(protoBuild.buildNumber))
         .limit(RECENT_PUBLISHES * 5),
     ]);
 

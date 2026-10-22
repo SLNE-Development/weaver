@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CircleCheckIcon, CircleXIcon, EyeIcon, PencilIcon, PlayIcon, PlusIcon, Trash2Icon, XIcon } from "lucide-react";
 import { toast } from "sonner";
-import { Alert, AlertDescription, AlertTitle } from "@protoloom/ui/components/alert";
+import { Alert, AlertDescription, AlertTitle } from "@weaver/ui/components/alert";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,14 +14,15 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@protoloom/ui/components/alert-dialog";
-import { Badge } from "@protoloom/ui/components/badge";
-import { Button } from "@protoloom/ui/components/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@protoloom/ui/components/dialog";
-import { Skeleton } from "@protoloom/ui/components/skeleton";
-import { Spinner } from "@protoloom/ui/components/spinner";
-import { Switch } from "@protoloom/ui/components/switch";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@protoloom/ui/components/table";
+} from "@weaver/ui/components/alert-dialog";
+import { Badge } from "@weaver/ui/components/badge";
+import { Button } from "@weaver/ui/components/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@weaver/ui/components/dialog";
+import { Skeleton } from "@weaver/ui/components/skeleton";
+import { Spinner } from "@weaver/ui/components/spinner";
+import { Switch } from "@weaver/ui/components/switch";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@weaver/ui/components/table";
+import type { Format } from "@weaver/core";
 import { describePolicy, toPolicyInput, type PolicyFormValues } from "@/lib/cleanup-policies";
 import { errorMessage, runNowErrorMessage } from "@/lib/trpc-error";
 import { useTRPC, type RouterOutputs } from "@/trpc/client";
@@ -33,12 +34,16 @@ const toFormValues = (p: Policy): PolicyFormValues => ({
   kind: p.kind,
   value: p.value,
   groupPrefix: p.groupPrefix ?? "",
+  pattern: p.pattern ?? "",
   includeReleases: p.includeReleases,
   enabled: p.enabled,
 });
 
-/** The cleanup policies of a repository: table, add/edit/delete, enable toggle, Preview and Run now. */
-export function CleanupPolicies({ repository }: { repository: string }) {
+/**
+ * The cleanup policies of a hosted repository of `format`: table, add/edit/delete, enable toggle,
+ * Preview and Run now. Only the format's kinds and options are offered.
+ */
+export function CleanupPolicies({ repository, format }: { repository: string; format: Format }) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const policies = useQuery(trpc.policies.list.queryOptions({ repository }));
@@ -76,7 +81,7 @@ export function CleanupPolicies({ repository }: { repository: string }) {
   );
 
   function toggle(policy: Policy, enabled: boolean) {
-    upsert.mutate(toPolicyInput(repository, policy.id, { ...toFormValues(policy), enabled }), {
+    upsert.mutate(toPolicyInput(format, repository, policy.id, { ...toFormValues(policy), enabled }), {
       onSuccess: () => toast.success(enabled ? "Policy enabled" : "Policy disabled"),
     });
   }
@@ -120,7 +125,7 @@ export function CleanupPolicies({ repository }: { repository: string }) {
             <TableHeader>
               <TableRow>
                 <TableHead className="pl-3">Rule</TableHead>
-                <TableHead>Groups</TableHead>
+                <TableHead>Scope</TableHead>
                 <TableHead>Enabled</TableHead>
                 <TableHead className="w-20" />
               </TableRow>
@@ -130,7 +135,7 @@ export function CleanupPolicies({ repository }: { repository: string }) {
                 <TableRow key={policy.id} data-state={policy.enabled ? undefined : "disabled"} className="data-[state=disabled]:text-muted-foreground">
                   <TableCell className="pl-3 whitespace-normal">
                     <span className="flex flex-wrap items-center gap-2">
-                      {describePolicy(policy)}
+                      {describePolicy(format, policy)}
                       {policy.includeReleases && (
                         <Badge variant="outline" className="border-destructive/40 font-mono text-[11px] text-destructive">
                           incl. releases
@@ -139,7 +144,11 @@ export function CleanupPolicies({ repository }: { repository: string }) {
                     </span>
                   </TableCell>
                   <TableCell className="font-mono text-xs">
-                    {policy.groupPrefix ? `${policy.groupPrefix}.*` : <span className="text-muted-foreground">all groups</span>}
+                    {policy.groupPrefix ? (
+                      format === "proto" ? `${policy.groupPrefix}.*` : `${policy.groupPrefix}*`
+                    ) : (
+                      <span className="text-muted-foreground">everything</span>
+                    )}
                   </TableCell>
                   <TableCell>
                     <Switch
@@ -167,12 +176,13 @@ export function CleanupPolicies({ repository }: { repository: string }) {
       )}
 
       <PolicyDialog
+        format={format}
         open={editing !== null}
         onOpenChange={(open) => !open && setEditing(null)}
         initial={initial}
         submitting={upsert.isPending}
         onSubmit={async (values) => {
-          await upsert.mutateAsync(toPolicyInput(repository, editing?.policy?.id, values));
+          await upsert.mutateAsync(toPolicyInput(format, repository, editing?.policy?.id, values));
           toast.success(editing?.policy ? "Policy saved" : "Policy added");
         }}
       />
@@ -182,7 +192,7 @@ export function CleanupPolicies({ repository }: { repository: string }) {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete this policy?</AlertDialogTitle>
             <AlertDialogDescription>
-              {deleting ? describePolicy(deleting) : ""}. Deleting the policy deletes no artifacts; it just stops running.
+              {deleting ? describePolicy(format, deleting) : ""}. Deleting the policy deletes no artifacts; it just stops running.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -237,22 +247,14 @@ function PreviewDialog({ repository, open, onOpenChange }: { repository: string;
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="pl-3">Coordinate</TableHead>
-                      <TableHead>Deletes</TableHead>
+                      <TableHead className="pl-3">Deletes</TableHead>
                       <TableHead className="pr-3">Reason</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {preview.data.map((item) => (
-                      <TableRow key={`${item.coordinate}#${item.buildNumber ?? "all"}`}>
-                        <TableCell className="pl-3 font-mono text-xs">{item.coordinate}</TableCell>
-                        <TableCell className="text-xs">
-                          {item.buildNumber === null ? (
-                            <span className="font-medium text-destructive">whole version</span>
-                          ) : (
-                            <span className="font-mono">build #{item.buildNumber}</span>
-                          )}
-                        </TableCell>
+                      <TableRow key={item.key}>
+                        <TableCell className="pl-3 font-mono text-xs">{item.label}</TableCell>
                         <TableCell className="pr-3 text-xs text-muted-foreground">{item.reason}</TableCell>
                       </TableRow>
                     ))}

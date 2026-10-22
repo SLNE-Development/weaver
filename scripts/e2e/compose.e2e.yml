@@ -1,0 +1,156 @@
+# E2E override of docker-compose.prod.yml (scripts/e2e/run.sh): dual storage (local primary plus
+# SeaweedFS S3 for cached mirrors), a second Weaver as the proto upstream, and under the `local`
+# profile the stand-in upstreams (registry, Verdaccio, Reposilite); under `docker` a Docker-in-Docker
+# daemon whose registry mirror is Weaver. Images come from scripts/e2e/versions.env.
+# Relative paths resolve against the repository root (the directory of the first compose file).
+# Every long-running service has a healthcheck, so `up --wait` waits for all of them.
+
+x-e2e-storage: &e2e-storage
+  STORAGE_DRIVER: local
+  S3_ENDPOINT: http://seaweedfs:8333
+  S3_BUCKET: weaver
+  S3_REGION: us-east-1
+  S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:?run scripts/e2e/run.sh}
+  S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:?run scripts/e2e/run.sh}
+
+services:
+  app:
+    mem_limit: 1g
+    environment: *e2e-storage
+    depends_on:
+      seaweedfs-init:
+        condition: service_healthy
+
+  worker:
+    environment: *e2e-storage
+
+  postgres:
+    volumes:
+      - ./scripts/e2e/stand-ins/postgres-init.sql:/docker-entrypoint-initdb.d/10-weaver-upstream.sql:ro
+
+  seaweedfs:
+    image: ${SEAWEEDFS_IMAGE:?}
+    command: server -s3 -s3.port=8333 -dir=/data -ip.bind=0.0.0.0
+    environment:
+      # Fallback admin identity of the S3 gateway.
+      AWS_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:?}
+      AWS_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:?}
+    volumes:
+      - seaweedfs-data:/data
+    healthcheck:
+      # Healthy once both the master and the filer answer, so the bucket init cannot race the filer.
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:9333/cluster/status && wget -q -O /dev/null http://127.0.0.1:8888/"]
+      interval: 2s
+      timeout: 5s
+      retries: 60
+
+  # Creates the bucket, then stays up (healthy) so `up --wait` does not trip over an exited container.
+  seaweedfs-init:
+    image: ${SEAWEEDFS_IMAGE:?}
+    depends_on:
+      seaweedfs:
+        condition: service_healthy
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        until out=$$(echo 's3.bucket.create -name weaver' | weed shell -master=seaweedfs:9333 2>&1) &&
+          case "$$out" in *"created bucket"*|*"already exists"*) true ;; *) false ;; esac; do
+          echo "$$out"; sleep 1
+        done
+        echo "$$out"
+        touch /tmp/bucket-ready
+        exec sleep infinity
+    healthcheck:
+      test: ["CMD-SHELL", "test -f /tmp/bucket-ready"]
+      interval: 2s
+      timeout: 3s
+      retries: 60
+
+  # A second Weaver: the proto upstream (own database, local storage, no worker, no Valkey).
+  upstream:
+    image: ${WEAVER_IMAGE:?}
+    command: ["web"]
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-weaver}:${POSTGRES_PASSWORD:?}@postgres:5432/weaver_upstream
+      STORAGE_DRIVER: local
+      STORAGE_LOCAL_PATH: /data/storage
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?}
+      BETTER_AUTH_URL: ${UPSTREAM_URL:?}
+      GITHUB_CLIENT_ID: e2e-client-id
+      GITHUB_CLIENT_SECRET: e2e-client-secret
+    ports:
+      - "127.0.0.1:${E2E_UPSTREAM_PORT:-3200}:3000"
+    volumes:
+      - upstream-storage:/data/storage
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  registry:
+    profiles: [local]
+    image: ${REGISTRY_IMAGE:?}
+    environment:
+      REGISTRY_AUTH: htpasswd
+      REGISTRY_AUTH_HTPASSWD_REALM: weaver-e2e
+      REGISTRY_AUTH_HTPASSWD_PATH: /auth/registry.htpasswd
+      REGISTRY_STORAGE_DELETE_ENABLED: "true"
+    ports:
+      - "127.0.0.1:${E2E_REGISTRY_PORT:-5000}:5000"
+    volumes:
+      - ./scripts/e2e/stand-ins/registry.htpasswd:/auth/registry.htpasswd:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:5000/"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  verdaccio:
+    profiles: [local]
+    image: ${VERDACCIO_IMAGE:?}
+    ports:
+      - "127.0.0.1:${E2E_VERDACCIO_PORT:-4873}:4873"
+    volumes:
+      - ./scripts/e2e/stand-ins/verdaccio.yaml:/verdaccio/conf/config.yaml:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:4873/-/ping"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  reposilite:
+    profiles: [local]
+    image: ${REPOSILITE_IMAGE:?}
+    environment:
+      REPOSILITE_OPTS: --token e2e:e2e-reposilite-secret
+    ports:
+      - "127.0.0.1:${E2E_REPOSILITE_PORT:-8081}:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8080/"]
+      interval: 3s
+      timeout: 3s
+      retries: 40
+      start_period: 10s
+
+  # Root-mirror test daemon (docker.sh). Host networking keeps localhost:${E2E_PORT} valid inside it.
+  dind:
+    profiles: [docker]
+    image: ${DIND_IMAGE:?}
+    privileged: true
+    network_mode: host
+    command:
+      - dockerd
+      - --registry-mirror=http://localhost:${APP_PORT:?}
+      - --insecure-registry=localhost:${APP_PORT:?}
+      - --bridge=none
+      - --iptables=false
+      - --host=unix:///var/run/dind.sock
+    healthcheck:
+      test: ["CMD", "docker", "-H", "unix:///var/run/dind.sock", "info"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+volumes:
+  seaweedfs-data:
+  upstream-storage:

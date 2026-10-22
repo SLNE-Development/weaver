@@ -1,0 +1,7 @@
+{
+  "name": "shared-pkg",
+  "version": "1.0.0",
+  "description": "Upstream release of a name that also lives in the hosted repository.",
+  "main": "index.js",
+  "license": "MIT"
+}

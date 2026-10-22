@@ -36,11 +36,11 @@ describe("docs share cards", () => {
 
   it("render through the one shared template, passing headers on", async () => {
     await renderDocsOgCard(
-      { eyebrow: "Docs", title: "Protoloom docs", subtitle: "s", host: "h", path: "/docs" },
+      { eyebrow: "Docs", title: "Weaver docs", subtitle: "s", host: "h", path: "/docs" },
       { headers: { "cache-control": "public, max-age=3600" } },
     );
     expect(og.renderOgCard).toHaveBeenCalledWith(
-      { eyebrow: "Docs", title: "Protoloom docs", subtitle: "s", footer: "h", meta: ["/docs"] },
+      { eyebrow: "Docs", title: "Weaver docs", subtitle: "s", footer: "h", meta: ["/docs"] },
       { headers: { "cache-control": "public, max-age=3600" } },
     );
   });

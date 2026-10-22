@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { cn } from "@protoloom/ui/lib/utils";
+import { cn } from "@weaver/ui/lib/utils";
 import type { DocNavGroup } from "@/lib/docs";
 
 /** The docs navigation grouped by section; the current page is highlighted and marked `aria-current`. */

@@ -1,8 +1,8 @@
 import { TRPCError } from "@trpc/server";
 import { asc, eq, inArray, like } from "drizzle-orm";
 import { z } from "zod";
-import { recordAudit, type Role } from "@protoloom/core";
-import { account, apikey, session, user, type Db, type Tx } from "@protoloom/db";
+import { recordAudit, type Role } from "@weaver/core";
+import { account, apikey, session, user, type Db, type Tx } from "@weaver/db";
 import { effectiveRole, parseRoles } from "../../roles";
 import { adminProcedure, router, type UserPrincipal } from "../init";
 import { notFound } from "../helpers";

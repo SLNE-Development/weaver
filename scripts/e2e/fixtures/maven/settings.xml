@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Maven settings of the e2e maven flows (scripts/e2e/maven.sh). `weaver` is every Weaver repository:
+     any username and an access token as the password, both from the environment. `reposilite` is the
+     local stand-in upstream, which the flows preload with mvn deploy. -De2e.central=<url> replaces the
+     `central` dependency repository (with real upstreams, an empty directory: the upstream artifact is
+     on Maven Central too, and a build must not get it from there instead of through Weaver). -->
+<settings xmlns="http://maven.apache.org/SETTINGS/1.2.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.2.0 https://maven.apache.org/xsd/settings-1.2.0.xsd">
+  <profiles>
+    <profile>
+      <id>e2e-central</id>
+      <activation>
+        <property>
+          <name>e2e.central</name>
+        </property>
+      </activation>
+      <repositories>
+        <repository>
+          <id>central</id>
+          <url>${e2e.central}</url>
+        </repository>
+      </repositories>
+    </profile>
+  </profiles>
+  <servers>
+    <server>
+      <id>weaver</id>
+      <username>${env.WEAVER_USER}</username>
+      <password>${env.WEAVER_PASS}</password>
+    </server>
+    <server>
+      <id>reposilite</id>
+      <username>e2e</username>
+      <password>e2e-reposilite-secret</password>
+    </server>
+  </servers>
+</settings>

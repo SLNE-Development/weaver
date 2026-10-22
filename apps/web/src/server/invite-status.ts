@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
-import type { Role } from "@protoloom/core";
-import { invite, type Db } from "@protoloom/db";
+import type { Role } from "@weaver/core";
+import { invite, type Db } from "@weaver/db";
 import { hashInviteToken } from "./invite";
 import { isRole } from "./roles";
 

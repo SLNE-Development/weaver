@@ -1,5 +1,5 @@
 name: Feature request
-description: Suggest something Protoloom should do
+description: Suggest something Weaver should do
 labels: [enhancement]
 body:
   - type: textarea

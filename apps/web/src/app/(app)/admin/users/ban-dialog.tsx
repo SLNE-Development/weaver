@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { z } from "zod";
-import { Button } from "@protoloom/ui/components/button";
+import { Button } from "@weaver/ui/components/button";
 import {
   Dialog,
   DialogClose,
@@ -15,11 +15,11 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@protoloom/ui/components/dialog";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@protoloom/ui/components/form";
-import { Input } from "@protoloom/ui/components/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@protoloom/ui/components/select";
-import { Spinner } from "@protoloom/ui/components/spinner";
+} from "@weaver/ui/components/dialog";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@weaver/ui/components/form";
+import { Input } from "@weaver/ui/components/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@weaver/ui/components/select";
+import { Spinner } from "@weaver/ui/components/spinner";
 import { useTRPC } from "@/trpc/client";
 
 const DURATIONS = [

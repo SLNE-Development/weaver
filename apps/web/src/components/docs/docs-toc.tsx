@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { cn } from "@protoloom/ui/lib/utils";
+import { cn } from "@weaver/ui/lib/utils";
 import type { DocHeading } from "@/lib/docs";
 
 /** "On this page": links to the page's headings, highlighting the one currently in view. */

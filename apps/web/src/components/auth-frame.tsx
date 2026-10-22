@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Logo } from "@protoloom/ui/components/logo";
+import { Logo } from "@weaver/ui/components/logo";
 
 const SAMPLE = [
   { coordinate: "dev.example:money", version: "1.4.0", kind: "release" },
@@ -8,7 +8,7 @@ const SAMPLE = [
 ] as const;
 
 /**
- * Page frame of the signed-out screens (login, invite): a dark brand panel with the logo, the
+ * Page frame of the signed-out screens (login, invite) and the npm login authorization: a dark brand panel with the logo, the
  * product's purpose and a sample of what it serves, next to the actual form. On narrow screens the
  * panel shrinks to a header above the form.
  */
@@ -17,11 +17,14 @@ export function AuthFrame({
   description,
   children,
   footer,
+  wide = false,
 }: {
   title: string;
   description: ReactNode;
   children: ReactNode;
   footer?: ReactNode;
+  /** Gives the form column room for wider forms (the npm login key form). */
+  wide?: boolean;
 }) {
   return (
     <div className="grid min-h-svh grid-rows-[auto_1fr] bg-background lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:grid-rows-1">
@@ -39,7 +42,7 @@ export function AuthFrame({
             One place for your team&apos;s .proto contracts, versioned like any other dependency.
           </p>
           <div className="rounded-md border border-sidebar-border bg-black/40 font-mono text-xs">
-            <div className="border-b border-sidebar-border px-3 py-2 text-muted-foreground">$ protoloom fetch</div>
+            <div className="border-b border-sidebar-border px-3 py-2 text-muted-foreground">$ weaver fetch</div>
             <ul className="flex flex-col gap-1.5 px-3 py-3">
               {SAMPLE.map((row) => (
                 <li key={row.coordinate} className="grid grid-cols-[1fr_auto] items-baseline gap-4">
@@ -50,11 +53,11 @@ export function AuthFrame({
             </ul>
           </div>
         </div>
-        <p className="relative hidden text-xs text-muted-foreground lg:block">Self-hosted registry for Protocol Buffers</p>
+        <p className="relative hidden text-xs text-muted-foreground lg:block">Self-hosted repository manager for Maven, npm, Docker and proto</p>
       </aside>
 
       <main className="flex items-start justify-center px-4 py-12 sm:px-10 lg:items-center">
-        <div className="flex w-full max-w-sm flex-col gap-8">
+        <div className={wide ? "flex w-full max-w-2xl flex-col gap-8" : "flex w-full max-w-sm flex-col gap-8"}>
           <div className="flex flex-col gap-2">
             <h1 className="text-xl font-semibold tracking-tight">{title}</h1>
             <div className="text-sm text-muted-foreground">{description}</div>

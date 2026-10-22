@@ -69,7 +69,7 @@ Each repository accepts releases, snapshots, or both (both by default). Publishi
 A common setup is a `releases` repository that accepts only releases and a `snapshots` repository that accepts only snapshots. The Gradle plugin sends `-SNAPSHOT` versions to `snapshotRepository` when you set it:
 
 ```kotlin title="build.gradle.kts"
-protoloom {
+weaver {
     repositories("releases", "snapshots")
     publishing {
         repository = "releases"
@@ -88,7 +88,7 @@ Before you delete or redeploy, check the **Dependents** tab of the version page.
 
 ### Publishing a deleted release again
 
-Deleting a release doesn't free its version number for new content. Protoloom remembers the checksum (sha256) of the deleted archive, whether a person or a [cleanup policy](/docs/admin/cleanup) deleted it. In a repository without **Allow redeploy**, publishing that version again is accepted only with identical content, for example to restore a release deleted by mistake. Different content is rejected with `409 immutable`:
+Deleting a release doesn't free its version number for new content. Weaver remembers the checksum (sha256) of the deleted archive, whether a person or a [cleanup policy](/docs/admin/cleanup) deleted it. In a repository without **Allow redeploy**, publishing that version again is accepted only with identical content, for example to restore a release deleted by mistake. Different content is rejected with `409 immutable`:
 
 ```text
 immutable: Release dev.surf.economy:economy-contracts:1.4.0 was deleted; re-publishing is only allowed with identical content (or enable redeploy)

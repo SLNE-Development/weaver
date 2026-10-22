@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { KeyRoundIcon, PlusIcon } from "lucide-react";
 import { toast } from "sonner";
-import type { Role } from "@protoloom/core";
-import { Alert, AlertDescription, AlertTitle } from "@protoloom/ui/components/alert";
+import type { Role } from "@weaver/core";
+import { Alert, AlertDescription, AlertTitle } from "@weaver/ui/components/alert";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -15,15 +16,15 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@protoloom/ui/components/alert-dialog";
-import { Badge } from "@protoloom/ui/components/badge";
-import { Button } from "@protoloom/ui/components/button";
-import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@protoloom/ui/components/empty";
-import { Label } from "@protoloom/ui/components/label";
-import { Skeleton } from "@protoloom/ui/components/skeleton";
-import { Spinner } from "@protoloom/ui/components/spinner";
-import { Switch } from "@protoloom/ui/components/switch";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@protoloom/ui/components/table";
+} from "@weaver/ui/components/alert-dialog";
+import { Badge } from "@weaver/ui/components/badge";
+import { Button } from "@weaver/ui/components/button";
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@weaver/ui/components/empty";
+import { Label } from "@weaver/ui/components/label";
+import { Skeleton } from "@weaver/ui/components/skeleton";
+import { Spinner } from "@weaver/ui/components/spinner";
+import { Switch } from "@weaver/ui/components/switch";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@weaver/ui/components/table";
 import { PageBody, PageHeader } from "@/components/manage/page-header";
 import { summarizePermissions } from "@/lib/api-keys";
 import { formatDate, formatRelative } from "@/lib/format";
@@ -134,7 +135,7 @@ export function KeysManager({ role, openCreate }: { role: Role; openCreate: bool
                 <TableHead>Permissions</TableHead>
                 <TableHead>Expires</TableHead>
                 <TableHead>Last used</TableHead>
-                <TableHead className="w-20" />
+                <TableHead className="w-36" />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -168,7 +169,10 @@ export function KeysManager({ role, openCreate }: { role: Role; openCreate: bool
                       <span className="text-muted-foreground">never</span>
                     )}
                   </TableCell>
-                  <TableCell className="pr-3 text-right">
+                  <TableCell className="pr-3 text-right whitespace-nowrap">
+                    <Button asChild variant="ghost" size="sm">
+                      <Link href={`/keys/${encodeURIComponent(key.id)}/activity`}>Activity</Link>
+                    </Button>
                     <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => setRevoking(key)}>
                       Revoke
                     </Button>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import * as core from "@protoloom/core";
+import * as core from "@weaver/core";
 import { isValidGroupPrefix, isValidRepositoryName } from "./names";
 
 const repositoryNames = ["main", "team-private", "a", "0abc", "-lead", "Upper", "with_underscore", "a".repeat(63), "a".repeat(64), ""];

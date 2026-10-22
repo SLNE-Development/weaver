@@ -9,7 +9,7 @@ import { spawn } from "node:child_process";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname } from "node:path";
-import { startTestDb } from "@protoloom/db/testing";
+import { startTestDb } from "@weaver/db/testing";
 
 const port = process.env.E2E_PORT;
 const stateFile = process.env.E2E_STATE_FILE;

@@ -13,7 +13,7 @@ function normalizeSvg(svg: string): string {
 
 describe("share cards", () => {
   it("inline the same logo as packages/ui", async () => {
-    const asset = await readFile(join(process.cwd(), "..", "..", "packages", "ui", "src", "assets", "protoloom-icon-inverted.svg"), "utf8");
+    const asset = await readFile(join(process.cwd(), "..", "..", "packages", "ui", "src", "assets", "weaver-icon-inverted.svg"), "utf8");
     expect(normalizeSvg(LOGO_INVERTED_SVG)).toBe(normalizeSvg(asset));
   });
 

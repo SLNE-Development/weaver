@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { Command as CommandPrimitive } from "cmdk"
-import { cn } from "@protoloom/ui/lib/utils"
+import { cn } from "@weaver/ui/lib/utils"
 import { SearchIcon } from "lucide-react"
 
 import {
@@ -11,7 +11,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@protoloom/ui/components/dialog"
+} from "@weaver/ui/components/dialog"
 
 function Command({
   className,

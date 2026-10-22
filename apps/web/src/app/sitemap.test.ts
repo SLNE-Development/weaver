@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { setting, type Db } from "@protoloom/db";
-import { startTestDb } from "@protoloom/db/testing";
+import { setting, type Db } from "@weaver/db";
+import { startTestDb } from "@weaver/db/testing";
 import type { ServerContext } from "@/server/context";
 import { insertRepository, insertVersion } from "@/test/catalog";
 import sitemap from "./sitemap";
@@ -8,7 +8,7 @@ import sitemap from "./sitemap";
 const holder = vi.hoisted(() => ({ db: undefined as Db | undefined, docs: [] as string[] }));
 
 vi.mock("@/server/context", () => ({
-  getServerContext: () => ({ db: holder.db }) as unknown as ServerContext,
+  getServerContext: () => ({ db: holder.db, stores: { primary: { id: "local" }, configured: () => ["local"] } }) as unknown as ServerContext,
 }));
 
 vi.mock("@/lib/public-catalog", async (importOriginal) => {

@@ -1,5 +1,5 @@
-import { Logo } from "@protoloom/ui/components/logo";
-import { cn } from "@protoloom/ui/lib/utils";
+import { Logo } from "@weaver/ui/components/logo";
+import { cn } from "@weaver/ui/lib/utils";
 import { CodeHtml } from "./code-block";
 import { highlight } from "./highlight";
 import { KindPill, Section, SectionHead } from "./layout";
@@ -23,7 +23,7 @@ function PanelHeading({ children }: { children: React.ReactNode }) {
 }
 
 /**
- * A static picture of the app's version page (sidebar, files, viewer, details), built from the
+ * A static picture of the app's proto version page (sidebar, files, viewer, details), built from the
  * same tokens. Columns drop away on narrower screens: sidebar below xl, file list below md.
  */
 export async function BrowsePreview() {
@@ -32,9 +32,9 @@ export async function BrowsePreview() {
 
   return (
     <Section label="browse-title">
-      <SectionHead id="browse-title" eyebrow="Browse" title="Every version, every file, every dependent.">
-        Read the protos of any version in the browser, see what it depends on and who depends on it, and copy the
-        coordinate with Ctrl+K.
+      <SectionHead id="browse-title" eyebrow="Browse" title="A view that fits each format.">
+        Maven artifacts, npm packages with their dist-tags, Docker tags with their platforms, Helm charts, signatures and
+        SBOMs, and proto versions with a file viewer, like the one below.
       </SectionHead>
       <figure
         aria-label="Version page of dev.surf.economy:economy-contracts:1.4.0"

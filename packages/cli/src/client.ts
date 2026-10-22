@@ -33,7 +33,7 @@ const DEFAULT_TIMEOUT_MS = 60_000;
 
 export interface Downloaded {
   data: Buffer;
-  /** Value of `x-protoloom-sha256`, when the server sent it. */
+  /** Value of `x-weaver-sha256`, when the server sent it. */
   sha256?: string;
 }
 
@@ -89,7 +89,7 @@ export class RegistryClient {
     const res = await this.request(this.archiveTarget(archiveUrl), { method: "GET" });
     return {
       data: Buffer.from(await res.arrayBuffer()),
-      sha256: res.headers.get("x-protoloom-sha256")?.toLowerCase() ?? undefined,
+      sha256: res.headers.get("x-weaver-sha256")?.toLowerCase() ?? undefined,
     };
   }
 

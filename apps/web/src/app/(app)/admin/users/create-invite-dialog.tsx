@@ -7,8 +7,8 @@ import { useMutation } from "@tanstack/react-query";
 import { CheckIcon, CopyIcon, PlusIcon, TriangleAlertIcon } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
-import { Alert, AlertDescription, AlertTitle } from "@protoloom/ui/components/alert";
-import { Button } from "@protoloom/ui/components/button";
+import { Alert, AlertDescription, AlertTitle } from "@weaver/ui/components/alert";
+import { Button } from "@weaver/ui/components/button";
 import {
   Dialog,
   DialogClose,
@@ -18,14 +18,14 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@protoloom/ui/components/dialog";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@protoloom/ui/components/form";
-import { Input } from "@protoloom/ui/components/input";
-import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@protoloom/ui/components/input-group";
-import { Label } from "@protoloom/ui/components/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@protoloom/ui/components/select";
-import { Spinner } from "@protoloom/ui/components/spinner";
-import { Textarea } from "@protoloom/ui/components/textarea";
+} from "@weaver/ui/components/dialog";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@weaver/ui/components/form";
+import { Input } from "@weaver/ui/components/input";
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@weaver/ui/components/input-group";
+import { Label } from "@weaver/ui/components/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@weaver/ui/components/select";
+import { Spinner } from "@weaver/ui/components/spinner";
+import { Textarea } from "@weaver/ui/components/textarea";
 import { useTRPC } from "@/trpc/client";
 import { formatDateTime } from "../_components/format";
 

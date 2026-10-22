@@ -1,0 +1,7 @@
+{
+  "name": "@e2e/pub-berry",
+  "version": "1.0.0",
+  "description": "Published by the berry client.",
+  "main": "index.js",
+  "license": "MIT"
+}

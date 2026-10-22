@@ -1,5 +1,5 @@
 {
-  "name": "@protoloom/worker",
+  "name": "@weaver/worker",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -13,16 +13,19 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@protoloom/core": "workspace:*",
-    "@protoloom/db": "workspace:*",
-    "@protoloom/jobs": "workspace:*",
+    "@weaver/core": "workspace:*",
+    "@weaver/db": "workspace:*",
+    "@weaver/docker": "workspace:*",
+    "@weaver/jobs": "workspace:*",
+    "@weaver/maven": "workspace:*",
+    "@weaver/npm": "workspace:*",
     "@t3-oss/env-core": "0.13.11",
     "bullmq": "6.3.19",
     "ioredis": "6.0.0",
     "zod": "4.6.7"
   },
   "devDependencies": {
-    "@protoloom/config": "workspace:*",
+    "@weaver/config": "workspace:*",
     "@testcontainers/valkey": "12.2.1",
     "@types/node": "26.6.5",
     "drizzle-orm": "0.45.4",

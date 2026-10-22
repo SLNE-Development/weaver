@@ -3,6 +3,7 @@ import {
   canAccess,
   canDeleteVersions,
   canForce,
+  canReadThroughGroup,
   groupMatches,
   isAdmin,
   maxKeyAccess,
@@ -12,8 +13,8 @@ import {
   type Role,
 } from "./permissions.js";
 
-const priv: RepoRef = { name: "private", visibility: "private" };
-const pub: RepoRef = { name: "public", visibility: "public" };
+const priv: RepoRef = { id: "id-private", name: "private", visibility: "private" };
+const pub: RepoRef = { id: "id-public", name: "public", visibility: "public" };
 
 const user = (role: Role): Principal => ({ kind: "user", userId: "u1", role });
 const key = (role: Role, access: Access = "write"): Principal => ({
@@ -21,7 +22,7 @@ const key = (role: Role, access: Access = "write"): Principal => ({
   keyId: "k1",
   userId: "u1",
   role,
-  permissions: [{ repository: "private", groupPrefix: "dev.surf", access }],
+  permissions: [{ repositoryId: "id-private", repository: "private", groupPrefix: "dev.surf", access }],
 });
 const anon: Principal = { kind: "anonymous" };
 
@@ -80,7 +81,7 @@ describe("canAccess", () => {
       keyId: "k",
       userId: "u",
       role: "maintainer",
-      permissions: [{ repository: "private", groupPrefix: null, access: "write" }],
+      permissions: [{ repositoryId: "id-private", repository: "private", groupPrefix: null, access: "write" }],
     };
     expect(canAccess(p, priv, "any.group", "write")).toBe(true);
   });
@@ -113,5 +114,37 @@ describe("canForce / isAdmin", () => {
     expect(canForce(anon)).toBe(false);
     expect(isAdmin(user("admin"))).toBe(true);
     expect(isAdmin(user("viewer"))).toBe(false);
+  });
+});
+
+describe("groups", () => {
+  const grp: RepoRef = { id: "id-group", name: "all", visibility: "private", kind: "group" };
+  const withEntry = (access: Access, prefix: string | null = null): Principal => ({
+    kind: "apikey",
+    keyId: "k2",
+    userId: "u1",
+    role: "maintainer",
+    permissions: [{ repositoryId: "id-group", repository: "all", groupPrefix: prefix, access }],
+  });
+
+  it("denies writes on a group even with a write entry for it", () => {
+    expect(canAccess(withEntry("write"), grp, "", "write")).toBe(false);
+    expect(canAccess(withEntry("write"), { ...grp, visibility: "public" }, "", "write")).toBe(false);
+    expect(canDeleteVersions(withEntry("write"), grp, "")).toBe(false);
+  });
+
+  it("lets a read entry on the group read through it", () => {
+    expect(canReadThroughGroup(withEntry("read"), grp)).toBe(true);
+    expect(canReadThroughGroup(withEntry("write"), grp)).toBe(true);
+  });
+
+  it("does not let read on a member grant read through the group", () => {
+    expect(canReadThroughGroup(key("maintainer", "read"), grp)).toBe(false);
+    expect(canReadThroughGroup(anon, grp)).toBe(false);
+    expect(canReadThroughGroup(anon, { ...grp, visibility: "public" })).toBe(true);
+  });
+
+  it("matches entries by repository id, not name", () => {
+    expect(canAccess(key("maintainer"), { ...priv, id: "other" }, "dev.surf", "write")).toBe(false);
   });
 });

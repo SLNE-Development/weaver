@@ -3,8 +3,8 @@
 import { MenuIcon } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { Button } from "@protoloom/ui/components/button";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@protoloom/ui/components/sheet";
+import { Button } from "@weaver/ui/components/button";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@weaver/ui/components/sheet";
 import type { DocNavGroup } from "@/lib/docs";
 import { DocsNav } from "./docs-nav";
 

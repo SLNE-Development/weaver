@@ -1,12 +1,13 @@
 name: Release
 
 # Pushing a tag vX.Y.Z publishes:
-#   - the Docker image ghcr.io/slne-development/protoloom:X.Y.Z and :latest
-#   - the CLI to npm as `protoloom@X.Y.Z`              (secret NPM_TOKEN)
-#   - the Gradle plugin dev.protoloom to https://reposilite.slne.dev/releases/
+#   - the Docker image ghcr.io/slne-development/weaver:X.Y.Z and :latest
+#   - the CLI to npm as `@slne/weaver-cli@X.Y.Z`              (secret NPM_TOKEN)
+#   - the Gradle plugin dev.slne.weaver to https://reposilite.slne.dev/releases/
 #                                                      (secrets SLNE_RELEASES_REPO_USERNAME, SLNE_RELEASES_REPO_PASSWORD)
 # The tag must match the versions in packages/cli/package.json and gradle-plugin/build.gradle.kts.
-# npm and Gradle publish only after the image was built and pushed.
+# The image is pushed only after the e2e suite (.github/workflows/e2e.yml, local stand-in upstreams)
+# passed; npm and Gradle publish only after the image was built and pushed.
 # Third-party actions are pinned to commit SHAs; the comment names the release.
 on:
   push:
@@ -35,9 +36,16 @@ jobs:
           [ "$cli" = "$VERSION" ] || { echo "packages/cli/package.json has version $cli, tag is $VERSION" >&2; exit 1; }
           [ "$plugin" = "$VERSION" ] || { echo "gradle-plugin/build.gradle.kts has version $plugin, tag is $VERSION" >&2; exit 1; }
 
+  e2e:
+    name: E2E
+    needs: versions
+    uses: ./.github/workflows/e2e.yml
+    with:
+      upstreams: local
+
   image:
     name: Docker image
-    needs: versions
+    needs: [versions, e2e]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -58,10 +66,10 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ghcr.io/slne-development/protoloom:${{ needs.versions.outputs.version }}
-            ghcr.io/slne-development/protoloom:latest
+            ghcr.io/slne-development/weaver:${{ needs.versions.outputs.version }}
+            ghcr.io/slne-development/weaver:latest
           labels: |
-            org.opencontainers.image.source=https://github.com/SLNE-Development/protoloom
+            org.opencontainers.image.source=https://github.com/SLNE-Development/weaver
             org.opencontainers.image.version=${{ needs.versions.outputs.version }}
             org.opencontainers.image.licenses=MIT
           cache-from: type=gha
@@ -85,7 +93,7 @@ jobs:
       - run: corepack enable
       - run: pnpm install --frozen-lockfile
       - run: pnpm turbo run build test --filter=./packages/cli
-      # @protoloom/core and zod are bundled into dist by tsup; the published manifest keeps no
+      # @weaver/core and zod are bundled into dist by tsup; the published manifest keeps no
       # (workspace) dependencies and no scripts.
       - name: Strip development fields
         working-directory: packages/cli

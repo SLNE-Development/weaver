@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CircleAlertIcon } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@protoloom/ui/components/alert";
-import { Badge } from "@protoloom/ui/components/badge";
-import { Button } from "@protoloom/ui/components/button";
+import { Alert, AlertDescription, AlertTitle } from "@weaver/ui/components/alert";
+import { Badge } from "@weaver/ui/components/badge";
+import { Button } from "@weaver/ui/components/button";
 import { AuthFrame } from "@/components/auth-frame";
 import { ProviderButtons } from "@/components/provider-buttons";
 import { DASHBOARD_PATH } from "@/lib/access";
@@ -52,7 +52,7 @@ export default async function InvitePage({ params }: { params: Promise<{ token: 
 
   return (
     <AuthFrame
-      title="You're invited to Protoloom"
+      title="You're invited to Weaver"
       description="Sign in with one of the accounts below to create your account."
       footer={
         <>

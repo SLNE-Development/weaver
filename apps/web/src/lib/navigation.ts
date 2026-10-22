@@ -1,11 +1,11 @@
-import type { Role } from "@protoloom/core";
+import type { Role } from "@weaver/core";
 
 /** Where a nav item sits in the sidebar. */
 export type NavSection = "registry" | "admin";
 
 /** One destination of the app shell, shared by the sidebar and the command dialog's "Go to" group. */
 export interface NavItem {
-  id: "dashboard" | "browse" | "repositories" | "keys" | "users" | "settings" | "audit";
+  id: "dashboard" | "browse" | "repositories" | "keys" | "users" | "settings" | "audit" | "usage";
   title: string;
   href: string;
   section: NavSection;
@@ -20,6 +20,7 @@ const NAV_ITEMS: readonly NavItem[] = [
   { id: "keys", title: "API keys", href: "/keys", section: "registry", audience: "signed-in" },
   { id: "users", title: "Users", href: "/admin/users", section: "admin", audience: "admin" },
   { id: "settings", title: "Settings", href: "/admin/settings", section: "admin", audience: "admin" },
+  { id: "usage", title: "Usage", href: "/admin/stats", section: "admin", audience: "admin" },
   { id: "audit", title: "Audit log", href: "/admin/audit", section: "admin", audience: "admin" },
 ];
 

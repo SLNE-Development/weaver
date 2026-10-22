@@ -1,0 +1,319 @@
+{
+  "repos": [
+    {
+      "name": "maven-hosted",
+      "format": "maven",
+      "kind": "hosted",
+      "visibility": "private"
+    },
+    {
+      "name": "maven-public",
+      "format": "maven",
+      "kind": "hosted",
+      "visibility": "public"
+    },
+    {
+      "name": "maven-mirror",
+      "format": "maven",
+      "kind": "mirror",
+      "visibility": "private",
+      "config": {
+        "cache": {
+          "enabled": false
+        },
+        "rules": {
+          "allow": [
+            "org.apache.commons:*",
+            "dev.weaver.e2e:*"
+          ]
+        }
+      },
+      "upstreams": [
+        {
+          "url": "https://repo.maven.apache.org/maven2/",
+          "authType": "none"
+        }
+      ]
+    },
+    {
+      "name": "maven-cached",
+      "format": "maven",
+      "kind": "mirror",
+      "visibility": "private",
+      "config": {
+        "cache": {
+          "enabled": true,
+          "store": "s3"
+        },
+        "rules": {
+          "allow": [
+            "org.apache.commons:*",
+            "dev.weaver.e2e:*"
+          ]
+        }
+      },
+      "upstreams": [
+        {
+          "url": "https://repo.maven.apache.org/maven2/",
+          "authType": "none"
+        }
+      ]
+    },
+    {
+      "name": "maven-group",
+      "format": "maven",
+      "kind": "group",
+      "visibility": "private",
+      "members": [
+        "maven-hosted",
+        "maven-mirror"
+      ]
+    },
+    {
+      "name": "npm-hosted",
+      "format": "npm",
+      "kind": "hosted",
+      "visibility": "private"
+    },
+    {
+      "name": "npm-public",
+      "format": "npm",
+      "kind": "hosted",
+      "visibility": "public"
+    },
+    {
+      "name": "npm-mirror",
+      "format": "npm",
+      "kind": "mirror",
+      "visibility": "private",
+      "config": {
+        "cache": {
+          "enabled": false
+        },
+        "rules": {
+          "allow": [
+            "is-number",
+            "@types/semver",
+            "@e2e/*"
+          ]
+        }
+      },
+      "upstreams": [
+        {
+          "url": "https://registry.npmjs.org/",
+          "authType": "none"
+        }
+      ]
+    },
+    {
+      "name": "npm-cached",
+      "format": "npm",
+      "kind": "mirror",
+      "visibility": "private",
+      "config": {
+        "cache": {
+          "enabled": true,
+          "store": "s3"
+        },
+        "rules": {
+          "allow": [
+            "is-number",
+            "@types/semver",
+            "@e2e/*"
+          ]
+        }
+      },
+      "upstreams": [
+        {
+          "url": "https://registry.npmjs.org/",
+          "authType": "none"
+        }
+      ]
+    },
+    {
+      "name": "npm-group",
+      "format": "npm",
+      "kind": "group",
+      "visibility": "private",
+      "members": [
+        "npm-hosted",
+        "npm-mirror"
+      ]
+    },
+    {
+      "name": "docker-hosted",
+      "format": "docker",
+      "kind": "hosted",
+      "visibility": "private"
+    },
+    {
+      "name": "docker-public",
+      "format": "docker",
+      "kind": "hosted",
+      "visibility": "public"
+    },
+    {
+      "name": "docker-mirror",
+      "format": "docker",
+      "kind": "mirror",
+      "visibility": "private",
+      "config": {
+        "dockerHub": true,
+        "cache": {
+          "enabled": false
+        },
+        "rules": {
+          "allow": [
+            "library/alpine",
+            "alpine"
+          ]
+        }
+      },
+      "upstreams": [
+        {
+          "url": "https://registry-1.docker.io",
+          "authType": "basic",
+          "usernameEnv": "DOCKERHUB_USERNAME",
+          "secretEnv": "DOCKERHUB_TOKEN"
+        }
+      ]
+    },
+    {
+      "name": "docker-cached",
+      "format": "docker",
+      "kind": "mirror",
+      "visibility": "private",
+      "config": {
+        "dockerHub": true,
+        "cache": {
+          "enabled": true,
+          "store": "s3"
+        },
+        "rules": {
+          "allow": [
+            "library/alpine",
+            "alpine"
+          ]
+        }
+      },
+      "upstreams": [
+        {
+          "url": "https://registry-1.docker.io",
+          "authType": "basic",
+          "usernameEnv": "DOCKERHUB_USERNAME",
+          "secretEnv": "DOCKERHUB_TOKEN"
+        }
+      ]
+    },
+    {
+      "name": "hub-mirror",
+      "format": "docker",
+      "kind": "mirror",
+      "visibility": "private",
+      "config": {
+        "dockerHub": true,
+        "cache": {
+          "enabled": false
+        },
+        "rules": {
+          "allow": [
+            "library/alpine",
+            "alpine"
+          ]
+        }
+      },
+      "upstreams": [
+        {
+          "url": "https://registry-1.docker.io",
+          "authType": "basic",
+          "usernameEnv": "DOCKERHUB_USERNAME",
+          "secretEnv": "DOCKERHUB_TOKEN"
+        }
+      ]
+    },
+    {
+      "name": "docker-group",
+      "format": "docker",
+      "kind": "group",
+      "visibility": "private",
+      "members": [
+        "docker-hosted",
+        "docker-mirror"
+      ]
+    },
+    {
+      "name": "hub",
+      "format": "docker",
+      "kind": "mirror",
+      "visibility": "public",
+      "dockerRoot": true,
+      "config": {
+        "dockerHub": true,
+        "cache": {
+          "enabled": true,
+          "store": "s3"
+        },
+        "rules": {
+          "allow": [
+            "library/alpine",
+            "alpine"
+          ]
+        }
+      },
+      "upstreams": [
+        {
+          "url": "https://registry-1.docker.io",
+          "authType": "basic",
+          "usernameEnv": "DOCKERHUB_USERNAME",
+          "secretEnv": "DOCKERHUB_TOKEN"
+        }
+      ]
+    }
+  ],
+  "tokens": {
+    "write": [
+      { "repository": "maven-hosted", "access": "write" },
+      { "repository": "maven-public", "access": "write" },
+      { "repository": "maven-mirror", "access": "read" },
+      { "repository": "maven-cached", "access": "read" },
+      { "repository": "maven-group", "access": "read" },
+      { "repository": "npm-hosted", "access": "write" },
+      { "repository": "npm-public", "access": "write" },
+      { "repository": "npm-mirror", "access": "read" },
+      { "repository": "npm-cached", "access": "read" },
+      { "repository": "npm-group", "access": "read" },
+      { "repository": "docker-hosted", "access": "write" },
+      { "repository": "docker-public", "access": "write" },
+      { "repository": "docker-mirror", "access": "read" },
+      { "repository": "docker-cached", "access": "read" },
+      { "repository": "docker-group", "access": "read" },
+      { "repository": "hub", "access": "read" },
+      { "repository": "hub-mirror", "access": "read" }
+    ],
+    "read": [
+      { "repository": "maven-hosted", "access": "read" },
+      { "repository": "maven-public", "access": "read" },
+      { "repository": "maven-mirror", "access": "read" },
+      { "repository": "maven-cached", "access": "read" },
+      { "repository": "maven-group", "access": "read" },
+      { "repository": "npm-hosted", "access": "read" },
+      { "repository": "npm-public", "access": "read" },
+      { "repository": "npm-mirror", "access": "read" },
+      { "repository": "npm-cached", "access": "read" },
+      { "repository": "npm-group", "access": "read" },
+      { "repository": "docker-hosted", "access": "read" },
+      { "repository": "docker-public", "access": "read" },
+      { "repository": "docker-mirror", "access": "read" },
+      { "repository": "docker-cached", "access": "read" },
+      { "repository": "docker-group", "access": "read" },
+      { "repository": "hub", "access": "read" },
+      { "repository": "hub-mirror", "access": "read" }
+    ],
+    "group": [
+      { "repository": "maven-group", "access": "read" },
+      { "repository": "npm-group", "access": "read" },
+      { "repository": "docker-group", "access": "read" }
+    ],
+    "none": []
+  }
+}

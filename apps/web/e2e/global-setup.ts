@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
-import { account, createDb, invite, session, user } from "@protoloom/db";
+import { account, createDb, invite, session, user } from "@weaver/db";
 import { BASE_URL, INVITES, SESSION_COOKIE, STATE_FILE, USERS, sessionToken } from "./fixtures";
 import { sessionCookieValue } from "./helpers";
 import { seedArtifacts } from "./seed-artifacts";

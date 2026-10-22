@@ -1,22 +1,22 @@
 ---
 title: Use protos in a project
-description: Add a dependency in Gradle or protoloom.json, fetch it with everything it imports, and point your code generator at the output folder.
+description: Add a dependency in Gradle or weaver.json, fetch it with everything it imports, and point your code generator at the output folder.
 section: Getting started
 order: 4
 ---
 
-Fetching downloads an artifact and all of its dependencies into one folder, with the import paths intact. Your code generator (surf-tide, protobuf-es, `buf generate`, `protoc` …) reads that folder. Protoloom itself never generates code.
+Fetching downloads an artifact and all of its dependencies into one folder, with the import paths intact. Your code generator (surf-tide, protobuf-es, `buf generate`, `protoc` …) reads that folder. Weaver itself never generates code.
 
 Find the coordinate of what you need under **Browse**. The **Usage** tab of every version shows a ready-made snippet.
 
 ## Do you need a key?
 
 - **Public repositories** can be read without a key, from anywhere, including CI.
-- **Private repositories** need an API key with `read` access to that repository. Create one under **API keys** (any role can create read keys) and export it as `PROTOLOOM_TOKEN`.
+- **Private repositories** need an API key with `read` access to that repository. Create one under **API keys** (any role can create read keys) and export it as `WEAVER_TOKEN`.
 
 ```sh
-export PROTOLOOM_URL={{url}}
-export PROTOLOOM_TOKEN=<your API key>   # only for private repositories
+export WEAVER_URL={{url}}
+export WEAVER_TOKEN=<your API key>   # only for private repositories
 ```
 
 ## In a Gradle project
@@ -25,15 +25,15 @@ Apply the plugin (see [Publish your first artifact](/docs/publish#apply-the-plug
 
 ```kotlin title="build.gradle.kts"
 plugins {
-    id("dev.protoloom") version "0.1.0"
+    id("dev.slne.weaver") version "0.1.0"
 }
 
-protoloom {
+weaver {
     repositories("releases", "snapshots")   // searched in this order
 }
 
 dependencies {
-    protoloom("dev.surf.economy:economy-contracts:1.4.0")
+    weaver("dev.surf.economy:economy-contracts:1.4.0")
 }
 ```
 
@@ -43,23 +43,31 @@ Fetch:
 ./gradlew fetchProtos
 ```
 
-The files land in `build/protoloom/protos/`. Hand that folder to your generator through `protoloom.protosDir`. It is a `Provider<Directory>` that carries the task dependency, so Gradle runs `fetchProtos` first:
+The files land in `build/weaver/protos/`. Hand that folder to your generator through `weaver.protosDir`. It is a `Provider<Directory>` that carries the task dependency, so Gradle runs `fetchProtos` first:
 
 ```kotlin title="build.gradle.kts"
 tasks.register<Exec>("generateContracts") {
-    val protos = protoloom.protosDir
+    val protos = weaver.protosDir
     inputs.dir(protos)
     commandLine("buf", "generate", protos.get().asFile.path)
 }
 ```
 
-With surf-tide or another proto plugin, pass `protoloom.protosDir` wherever it accepts a source or include directory.
+With surf-tide or another proto plugin, pass `weaver.protosDir` wherever it accepts a source or include directory.
+
+To search a group, list it like any repository. The group looks in its members in order:
+
+```kotlin
+weaver {
+    repositories("proto-all")
+}
+```
 
 ## In a Node project
 
-Add `protoloom.json` next to `package.json`:
+Add `weaver.json` next to `package.json`:
 
-```json title="protoloom.json"
+```json title="weaver.json"
 {
   "url": "{{url}}",
   "repositories": ["releases"],
@@ -71,14 +79,14 @@ Add `protoloom.json` next to `package.json`:
 Install the CLI as a dev dependency and run it from a script, so everyone gets the same files after `pnpm install`:
 
 ```sh
-pnpm add --save-dev protoloom
+pnpm add --save-dev @slne/weaver-cli
 ```
 
 ```json title="package.json"
 {
   "scripts": {
-    "protos": "protoloom fetch",
-    "postinstall": "protoloom fetch"
+    "protos": "weaver fetch",
+    "postinstall": "weaver fetch"
   }
 }
 ```

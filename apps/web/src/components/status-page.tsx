@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
-import { Skeleton } from "@protoloom/ui/components/skeleton";
-import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@protoloom/ui/components/empty";
+import { Skeleton } from "@weaver/ui/components/skeleton";
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@weaver/ui/components/empty";
 import { PageContainer } from "./browse-ui";
 
 /** Centered empty state for not-found and error pages inside the app shell. */

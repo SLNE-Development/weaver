@@ -3,24 +3,28 @@ export type ErrorCode =
   | "unauthorized"
   | "forbidden"
   | "not_found"
+  | "method_not_allowed"
   | "immutable"
   | "has_dependents"
   | "payload_too_large"
-  | "validation_failed";
+  | "validation_failed"
+  | "upstream_unavailable";
 
 const STATUS_BY_CODE: Record<ErrorCode, number> = {
   invalid_request: 400,
   unauthorized: 401,
   forbidden: 403,
   not_found: 404,
+  method_not_allowed: 405,
   immutable: 409,
   has_dependents: 409,
   payload_too_large: 413,
   validation_failed: 422,
+  upstream_unavailable: 502,
 };
 
 /** Process-wide brand of {@link RegistryError} instances, shared by every copy of this module. */
-const BRAND = Symbol.for("protoloom.RegistryError");
+const BRAND = Symbol.for("weaver.RegistryError");
 
 /**
  * Domain error carrying a stable machine-readable code and its HTTP status.

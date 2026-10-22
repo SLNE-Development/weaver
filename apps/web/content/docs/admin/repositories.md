@@ -25,7 +25,7 @@ You can combine them, for example `releases`, `snapshots` and `public`. Clients 
 3. Optionally add a **description**.
 4. Choose the settings below and save.
 
-The name can't be changed later. Clients refer to it in `protoloom { repositories(...) }` and `protoloom.json`.
+The name can't be changed later. Clients refer to it in `weaver { repositories(...) }` and `weaver.json`.
 
 ## Settings
 
@@ -54,13 +54,32 @@ Both are on by default. Turn one off to split versions across repositories, for 
 
 ### Resolution priority
 
-A number, `100` by default. When someone publishes, their declared dependencies are looked up in the target repository first, then in every other repository by ascending priority (lower wins), then by name.
+A number, `100` by default, for hosted proto repositories. When someone publishes, their declared dependencies are looked up in the target repository first, then in every other repository by ascending priority (lower wins), then by name.
 
 Give your main release repository a lower number than repositories that might contain the same coordinate, so publishes always resolve against it. This only affects publishing; clients that fetch use the order in their own config. See [Dependencies and resolution](/docs/resolution#resolution-when-publishing).
 
 ### Cleanup policies
 
 Rules that delete old snapshot builds and unused versions on a schedule. See [Cleanup policies](/docs/admin/cleanup).
+
+## Proto mirrors and groups
+
+Besides hosted repositories, a proto repository can be a mirror or a group. Both are read only: publishing to either answers `405 method_not_allowed`.
+
+### Proto mirrors
+
+A mirror serves the artifacts of a proto repository on another Weaver instance.
+
+- **Upstream URL:** `https://<host>/api/v1/repos/<repo>`, where `<repo>` is the name of the repository on the other instance.
+- **Token:** if the upstream repository is private, set a token. Weaver sends it as a bearer credential (`Authorization: Bearer <token>`). It is stored encrypted and never shown again.
+- **Rules:** allow and deny rules match `group:name`, for example `dev.surf.*:*`. Requests outside the rules are answered as not found without contacting the upstream.
+- **Caching:** off by default, so every request goes to the upstream. When on, the mirror stores release archives, which are immutable and kept until evicted, and version lists, manifests and snapshot archives, which are kept for the metadata TTL (1800 seconds by default). If the upstream fails and a cached copy exists, the cached copy is served.
+
+If the upstream does not answer and nothing is cached, clients get `502 upstream_unavailable`. Mirrors that point at each other are cut off by a hop limit of 4. See [Troubleshooting](/docs/troubleshooting#mirrors).
+
+### Proto groups
+
+A group lists hosted and mirror proto repositories as members, in order. A group cannot contain another group. Clients list the group like any repository (`repositories("proto-all")`), and the first member that has the exact version of an artifact wins. Read permission on a group grants read of everything served through it, so give keys access to the group, not to each member.
 
 ## Give people access
 

@@ -1,33 +1,43 @@
 # Production-style stack: web + worker (one image), postgres, valkey.
 #
 #   cp .env.example .env   # fill in the required values
-#   docker compose -f docker-compose.prod.yml pull     # released image ghcr.io/slne-development/protoloom:latest
+#   docker compose -f docker-compose.prod.yml pull     # released image ghcr.io/slne-development/weaver:latest
 #   docker compose -f docker-compose.prod.yml up -d    # or `up -d --build` to build it from this checkout
 #
-# PROTOLOOM_IMAGE overrides the image (e.g. ghcr.io/slne-development/protoloom:0.1.0 to pin a release).
+# WEAVER_IMAGE overrides the image (e.g. ghcr.io/slne-development/weaver:0.1.0 to pin a release).
+#
+# Client URLs, all on BETTER_AUTH_URL (put an https reverse proxy in front, see the docs: /docs/self-host/compose):
+#   Maven   ${BETTER_AUTH_URL}/maven/<repo>/
+#   npm     ${BETTER_AUTH_URL}/npm/<repo>/
+#   Docker  <host>/<repo>/<image>:<tag>   (registry API at /v2/; Docker needs https or `insecure-registries`)
+#   proto   ${BETTER_AUTH_URL} in the Gradle plugin / weaver CLI
 #
 # Storage defaults to a local volume shared by web and worker. For S3, set STORAGE_DRIVER=s3 and the
 # S3_* variables (see the commented block below). Run your own S3 provider, or copy the seaweedfs
 # services from docker-compose.coolify.yml.
 
-x-protoloom-env: &protoloom-env
-  DATABASE_URL: postgres://protoloom:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@postgres:5432/protoloom
+x-weaver-env: &weaver-env
+  DATABASE_URL: postgres://${POSTGRES_USER:-weaver}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-weaver}
   VALKEY_URL: redis://valkey:6379
   STORAGE_DRIVER: ${STORAGE_DRIVER:-local}
   STORAGE_LOCAL_PATH: /data/storage
-  # S3 (only used with STORAGE_DRIVER=s3), set in .env:
+  # S3, set in .env. A non-empty S3_BUCKET configures the S3 store whatever STORAGE_DRIVER says,
+  # and then S3_REGION and the keys are required; STORAGE_DRIVER=s3 makes it the primary store:
   #   S3_ENDPOINT=https://s3.example.com   (leave empty for AWS)
-  #   S3_BUCKET=protoloom
+  #   S3_BUCKET=weaver
   #   S3_REGION=us-east-1
   #   S3_ACCESS_KEY_ID=...
   #   S3_SECRET_ACCESS_KEY=...
+  # Dual storage: keep STORAGE_DRIVER=local (hosted content on the storage-data volume) AND set the S3_*
+  # values above; both stores are then configured, and mirror caches go to S3 once you pick it as
+  # "Default cache storage" in the admin settings (or per mirror).
   S3_ENDPOINT: ${S3_ENDPOINT:-}
   S3_BUCKET: ${S3_BUCKET:-}
   S3_REGION: ${S3_REGION:-}
   S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-}
   S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-}
   BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?Set BETTER_AUTH_SECRET (openssl rand -base64 48)}
-  BETTER_AUTH_URL: ${BETTER_AUTH_URL:?Set the public https URL, e.g. https://protos.example.com}
+  BETTER_AUTH_URL: ${BETTER_AUTH_URL:?Set the public https URL, e.g. https://weaver.example.com}
   # Required for the first deploy (OAuth-only login + invites: nobody could sign in otherwise); inert afterwards.
   INITIAL_ADMIN: ${INITIAL_ADMIN:-}
   GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
@@ -40,10 +50,10 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile
-    image: ${PROTOLOOM_IMAGE:-ghcr.io/slne-development/protoloom:latest}
+    image: ${WEAVER_IMAGE:-ghcr.io/slne-development/weaver:latest}
     command: ["web"]
     restart: unless-stopped
-    environment: *protoloom-env
+    environment: *weaver-env
     ports:
       - "${APP_PORT:-3000}:3000"
     volumes:
@@ -58,10 +68,10 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile
-    image: ${PROTOLOOM_IMAGE:-ghcr.io/slne-development/protoloom:latest}
+    image: ${WEAVER_IMAGE:-ghcr.io/slne-development/weaver:latest}
     command: ["worker"]
     restart: unless-stopped
-    environment: *protoloom-env
+    environment: *weaver-env
     volumes:
       - storage-data:/data/storage
     depends_on:
@@ -79,13 +89,13 @@ services:
     image: postgres:17-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: protoloom
+      POSTGRES_USER: ${POSTGRES_USER:-weaver}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
-      POSTGRES_DB: protoloom
+      POSTGRES_DB: ${POSTGRES_DB:-weaver}
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U protoloom -d protoloom"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 15

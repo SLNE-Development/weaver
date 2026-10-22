@@ -1,0 +1,7 @@
+{
+  "name": "@e2e/gone",
+  "version": "1.0.0",
+  "description": "Hosted package that the e2e test unpublishes.",
+  "main": "index.js",
+  "license": "MIT"
+}

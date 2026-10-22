@@ -1,18 +1,18 @@
 {
-  "name": "protoloom",
+  "name": "@slne/weaver-cli",
   "version": "0.1.0",
-  "description": "CLI for fetching .proto dependencies from a Protoloom registry",
-  "keywords": ["protobuf", "proto", "registry", "protoloom", "cli"],
+  "description": "CLI for fetching .proto dependencies from a Weaver registry",
+  "keywords": ["protobuf", "proto", "registry", "weaver", "cli"],
   "license": "MIT",
-  "homepage": "https://github.com/SLNE-Development/protoloom#readme",
+  "homepage": "https://github.com/SLNE-Development/weaver#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/SLNE-Development/protoloom.git",
+    "url": "git+https://github.com/SLNE-Development/weaver.git",
     "directory": "packages/cli"
   },
-  "bugs": { "url": "https://github.com/SLNE-Development/protoloom/issues" },
+  "bugs": { "url": "https://github.com/SLNE-Development/weaver/issues" },
   "type": "module",
-  "bin": { "protoloom": "dist/index.js" },
+  "bin": { "weaver": "dist/index.js" },
   "files": ["dist", "README.md"],
   "engines": { "node": ">=22.3" },
   "publishConfig": { "access": "public" },
@@ -23,8 +23,8 @@
     "test": "vitest run"
   },
   "devDependencies": {
-    "@protoloom/config": "workspace:*",
-    "@protoloom/core": "workspace:*",
+    "@weaver/config": "workspace:*",
+    "@weaver/core": "workspace:*",
     "@types/node": "26.6.5",
     "eslint": "10.13.0",
     "tsup": "9.0.0",

@@ -1,0 +1,5 @@
+{
+  "extends": "@weaver/config/tsconfig.node.json",
+  "compilerOptions": { "types": ["node"], "outDir": "dist", "rootDir": "src" },
+  "include": ["src"]
+}

@@ -1,0 +1,7 @@
+{
+  "name": "@e2e/pub-yarn1",
+  "version": "1.0.0",
+  "description": "Published by the yarn1 client.",
+  "main": "index.js",
+  "license": "MIT"
+}

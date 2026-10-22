@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
-import { RegistryError, type KeyPermission, type Principal, type Role } from "@protoloom/core";
-import { apiKeyPermission, user, type Db } from "@protoloom/db";
+import { extractToken, RegistryError, type KeyPermission, type Principal, type Role } from "@weaver/core";
+import { repoPermission, repository, user, type Db } from "@weaver/db";
 import type { Auth } from "./auth";
 import { getServerContext } from "./context";
 import { effectiveRole } from "./roles";
@@ -20,18 +20,11 @@ export async function loadActiveRole(db: Db, userId: string): Promise<Role | nul
   return banned ? null : effectiveRole(owner.role);
 }
 
-/** The token of an `Authorization: Bearer <token>` header; `""` for an empty bearer, `null` without one. */
-function bearerToken(req: Request): string | null {
-  const header = req.headers.get("authorization");
-  const match = header?.match(/^Bearer(?:\s+(.*))?$/i);
-  return match ? (match[1] ?? "").trim() : null;
-}
-
 /**
- * Resolves who is making `req`. A bearer token must be a valid, unexpired, enabled API key whose
+ * Resolves who is making `req`. A bearer or basic (any user, token as password) token must be a valid, unexpired, enabled API key whose
  * owner is not banned, or this throws `RegistryError("unauthorized")`; the principal carries the
  * owner's role as stored now (so a demotion takes effect on the next request) and the key's
- * permission entries. Without a bearer, a Better Auth session cookie yields a user principal;
+ * permission entries. Without a token, a Better Auth session cookie yields a user principal;
  * with neither, the request is anonymous.
  */
 export async function getPrincipal(
@@ -39,7 +32,7 @@ export async function getPrincipal(
   deps: { db: Db; auth: Auth } = getServerContext(),
 ): Promise<Principal> {
   const { db, auth } = deps;
-  const token = bearerToken(req);
+  const token = extractToken(req.headers);
 
   if (token !== null) {
     if (!token) throw unauthorized();
@@ -51,12 +44,14 @@ export async function getPrincipal(
     if (!role) throw unauthorized();
     const rows = await db
       .select({
-        repository: apiKeyPermission.repository,
-        groupPrefix: apiKeyPermission.groupPrefix,
-        access: apiKeyPermission.access,
+        repositoryId: repoPermission.repositoryId,
+        repository: repository.name,
+        groupPrefix: repoPermission.groupPrefix,
+        access: repoPermission.access,
       })
-      .from(apiKeyPermission)
-      .where(eq(apiKeyPermission.apiKeyId, keyId));
+      .from(repoPermission)
+      .innerJoin(repository, eq(repository.id, repoPermission.repositoryId))
+      .where(eq(repoPermission.apiKeyId, keyId));
     const permissions: KeyPermission[] = rows;
     return { kind: "apikey", keyId, userId, role, permissions };
   }

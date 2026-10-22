@@ -21,19 +21,19 @@ test.describe("anonymous visitors", () => {
 
   test("see only the configured provider on the login page", async ({ page }) => {
     await page.goto("/login");
-    await expect(page.getByRole("heading", { name: "Sign in to Protoloom" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Sign in to Weaver" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Continue with GitHub" })).toBeVisible();
     await expect(page.getByRole("button", { name: /Discord/ })).toHaveCount(0);
   });
 
   test("see the invite message after a refused sign-up", async ({ page }) => {
     await page.goto("/login?error=invite_required");
-    await expect(page.getByText("You need an invite to join this Protoloom.")).toBeVisible();
+    await expect(page.getByText("You need an invite to join this Weaver.")).toBeVisible();
   });
 
   test("see the granted role and the providers on a valid invite", async ({ page }) => {
     await page.goto(`/invite/${INVITES.viewer}`);
-    await expect(page.getByRole("heading", { name: "You're invited to Protoloom" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "You're invited to Weaver" })).toBeVisible();
     await expect(page.getByTestId("invite-role")).toHaveText("viewer");
     await expect(page.getByText("Welcome to the team")).toBeVisible();
     await expect(page.getByRole("button", { name: "Continue with GitHub" })).toBeVisible();

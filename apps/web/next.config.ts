@@ -11,14 +11,16 @@ loadEnvConfig(monorepoRoot, process.env.NODE_ENV !== "production", undefined, tr
 
 const config: NextConfig = {
   output: "standalone",
+  // Protocol clients (Maven, npm, Docker) address `/v2/` and `/maven/x/` exactly; never redirect them.
+  skipTrailingSlashRedirect: true,
   outputFileTracingRoot: monorepoRoot,
-  transpilePackages: ["@protoloom/ui"],
+  transpilePackages: ["@weaver/ui"],
   serverExternalPackages: ["pg"],
   // `next build` type-checks the app only; tests (some import other workspaces' sources, which the
   // Docker build prunes away) are checked by the `typecheck` script against tsconfig.json.
   typescript: { tsconfigPath: "tsconfig.build.json" },
   // Workspace packages are bundled but read files at runtime that the tracer cannot see:
-  // @protoloom/db its SQL migrations, @protoloom/core the buf binary of the installed platform package.
+  // @weaver/db its SQL migrations, @weaver/core the buf binary of the installed platform package.
   outputFileTracingIncludes: {
     "/*": [
       "../../packages/db/drizzle/**/*",

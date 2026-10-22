@@ -5,11 +5,11 @@ section: Concepts
 order: 3
 ---
 
-Protoloom never stores an artifact that doesn't compile. Every publish goes through the checks below. Any failing check rejects the publish, and nothing is stored. The sections group the checks by topic; the server runs some of them interleaved (for example, the archive size and the manifest are checked before the archive contents are unpacked).
+Weaver never stores an artifact that doesn't compile. Every publish goes through the checks below. Any failing check rejects the publish, and nothing is stored. The sections group the checks by topic; the server runs some of them interleaved (for example, the archive size and the manifest are checked before the archive contents are unpacked).
 
 ## 1. The archive
 
-The upload must be a `.tar.gz` that contains only `.proto` files. The Gradle plugin builds it for you from `protoloom.publishing.source`.
+The upload must be a `.tar.gz` that contains only `.proto` files. The Gradle plugin builds it for you from `weaver.publishing.source`.
 
 | Rule | Error |
 | --- | --- |
@@ -21,7 +21,7 @@ The upload must be a `.tar.gz` that contains only `.proto` files. The Gradle plu
 | No duplicate paths, at least one `.proto` file | `400 invalid_request` |
 | Files are valid UTF-8 | `400 invalid_request` |
 
-If Gradle reports `No .proto files found in …`, check that your files are under `src/main/proto` or set `protoloom.publishing.source`.
+If Gradle reports `No .proto files found in …`, check that your files are under `src/main/proto` or set `weaver.publishing.source`.
 
 ## 2. The manifest
 
@@ -48,7 +48,7 @@ For a path conflict, `details.collisions` lists each path and the coordinates th
 
 ## 4. Compilation
 
-Finally, Protoloom compiles your files with [buf](https://buf.build), together with the files of every resolved dependency and the protobuf well-known types (`google/protobuf/*.proto`). An import is satisfied only by:
+Finally, Weaver compiles your files with [buf](https://buf.build), together with the files of every resolved dependency and the protobuf well-known types (`google/protobuf/*.proto`). An import is satisfied only by:
 
 - a file in your own artifact,
 - a file in a declared dependency, directly or transitively,
@@ -79,7 +79,7 @@ Gradle prints the code and message (`validation_failed: Proto validation failed`
 
 ## Fixing common failures
 
-**`imported file does not exist: …`.** The imported file isn't in your artifact or any declared dependency. Find the artifact that contains it under **Browse** and add it with `protoloom("group:name:version")`. Files from transitive dependencies satisfy imports too, but declare every artifact you import from directly, so your artifact keeps compiling when a dependency drops one of its own.
+**`imported file does not exist: …`.** The imported file isn't in your artifact or any declared dependency. Find the artifact that contains it under **Browse** and add it with `weaver("group:name:version")`. Files from transitive dependencies satisfy imports too, but declare every artifact you import from directly, so your artifact keeps compiling when a dependency drops one of its own.
 
 **A compile error in your own file.** Fix the syntax or type error at the given line and column.
 

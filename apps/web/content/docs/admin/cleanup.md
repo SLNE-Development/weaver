@@ -56,6 +56,15 @@ A misconfigured `0` days is treated as `1`, so a typo can't wipe a repository.
 > [!WARNING]
 > **Include releases deletes releases for good.** Builds that pin an old release fail once it is gone. Use it only in repositories whose consumers always move to new versions, and check the preview first. A deleted release can only be restored with identical content unless the repository allows redeploy (see [Publishing a deleted release again](/docs/versions#publishing-a-deleted-release-again)).
 
+## Mirrors and groups
+
+Cleanup policies apply to **hosted repositories only**. A mirror's or a group's settings page has no cleanup section, and policies cannot be added to them.
+
+- **Mirrors** are trimmed by the eviction settings of their cache instead: **Max age (days)** since last access and **Max size (GiB)**, least recently used content first. The worker runs eviction every hour.
+- **Groups** store nothing of their own; clean up their hosted members.
+
+Proto mirrors are no longer cleaned by cleanup policies. Use the mirror's eviction settings to limit its cache.
+
 ## Removing versions by hand
 
 To remove a single version now, open it under **Browse** and choose **Delete** (maintainers and admins). Unlike cleanup, a manual delete of a depended-on version can be forced by an admin. See [Versions and snapshots](/docs/versions#deleting-a-version).

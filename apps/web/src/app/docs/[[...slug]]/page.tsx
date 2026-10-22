@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!doc) return {};
   const url = publicUrl(doc.path);
   // Share card from /og/docs/…: Next.js doesn't allow opengraph-image below an optional catch-all.
-  const image = { url: publicUrl(`/og${doc.path}`), width: 1200, height: 630, alt: `${doc.title} · Protoloom docs` };
+  const image = { url: publicUrl(`/og${doc.path}`), width: 1200, height: 630, alt: `${doc.title} · Weaver docs` };
   return {
     title: doc.title,
     description: doc.description,
@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       type: "article",
       url,
-      siteName: "Protoloom",
+      siteName: "Weaver",
       title: doc.title,
       description: doc.description,
       section: doc.section,
@@ -55,7 +55,7 @@ function jsonLd(doc: DocMeta): string {
       url,
       articleSection: doc.section,
       inLanguage: "en",
-      isPartOf: { "@type": "WebSite", name: "Protoloom", url: publicUrl("/") },
+      isPartOf: { "@type": "WebSite", name: "Weaver", url: publicUrl("/") },
     },
     {
       "@context": "https://schema.org",

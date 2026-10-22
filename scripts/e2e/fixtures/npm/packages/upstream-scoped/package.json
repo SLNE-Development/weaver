@@ -1,0 +1,7 @@
+{
+  "name": "@e2e/upstream-scoped",
+  "version": "1.0.0",
+  "description": "Scoped package that only the upstream registry has.",
+  "main": "index.js",
+  "license": "MIT"
+}

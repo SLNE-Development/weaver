@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { cn } from "@protoloom/ui/lib/utils"
+import { cn } from "@weaver/ui/lib/utils"
 import { Separator as SeparatorPrimitive } from "radix-ui"
 
 function Separator({

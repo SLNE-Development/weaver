@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { cn } from "@protoloom/ui/lib/utils"
+import { cn } from "@weaver/ui/lib/utils"
 import type { Label as LabelPrimitive } from "radix-ui"
 import { Slot } from "radix-ui"
 import {
@@ -14,7 +14,7 @@ import {
   type FieldValues,
 } from "react-hook-form"
 
-import { Label } from "@protoloom/ui/components/label"
+import { Label } from "@weaver/ui/components/label"
 
 const Form = FormProvider
 

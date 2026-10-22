@@ -1,7 +1,10 @@
 import { createHighlighter, type ShikiTransformer, type ThemeRegistration } from "shiki";
+import type { SnippetLang } from "./samples";
 
 /** Languages used on the landing page. */
-export type CodeLang = "proto" | "kotlin" | "json" | "yaml";
+export type CodeLang = SnippetLang | "proto";
+
+const LANGS: CodeLang[] = ["proto", "kotlin", "json", "yaml", "ini", "shellscript", "xml"];
 
 interface InkPalette {
   fg: string;
@@ -31,6 +34,7 @@ function inkTheme(name: string, type: "light" | "dark", c: InkPalette): ThemeReg
       { scope: ["string", "string.unquoted.plain.out.yaml"], settings: { foreground: c.release } },
       { scope: ["string.unquoted.proto.package", "entity.name.tag", "support.type.property-name"], settings: { foreground: c.fg } },
       { scope: ["constant.numeric", "constant.language"], settings: { foreground: c.snapshot } },
+      { scope: ["variable.other.normal.shell", "punctuation.definition.variable.shell", "variable.other.bracket.shell"], settings: { foreground: c.snapshot } },
     ],
   };
 }
@@ -55,7 +59,7 @@ let highlighter: ReturnType<typeof createHighlighter> | undefined;
 
 /** One highlighter per process, with only the landing languages and the Ink themes loaded. */
 function getHighlighter() {
-  highlighter ??= createHighlighter({ themes: [INK_LIGHT, INK_DARK], langs: ["proto", "kotlin", "json", "yaml"] });
+  highlighter ??= createHighlighter({ themes: [INK_LIGHT, INK_DARK], langs: LANGS });
   return highlighter;
 }
 

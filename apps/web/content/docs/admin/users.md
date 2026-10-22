@@ -66,5 +66,5 @@ Without `INITIAL_ADMIN`, nobody can sign in to a fresh instance. See [Configurat
 ## Sign-in rules
 
 - A provider signs a user in only if that user connected it, either by joining with it or on the **Account** page.
-- Protoloom never links accounts by email. Someone who joined with GitHub and tries Discord without connecting it first is asked for an invite.
+- Weaver never links accounts by email. Someone who joined with GitHub and tries Discord without connecting it first is asked for an invite.
 - Users can connect and disconnect providers on **Account**, but can't disconnect the last one.

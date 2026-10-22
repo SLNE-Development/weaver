@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { FileCodeIcon, FolderIcon } from "lucide-react";
-import { cn } from "@protoloom/ui/lib/utils";
+import { cn } from "@weaver/ui/lib/utils";
 import type { FileTreeNode } from "@/lib/browse";
 
 function Nodes({ nodes, depth, selected, hrefFor }: { nodes: FileTreeNode[]; depth: number; selected: string; hrefFor: (path: string) => string }) {

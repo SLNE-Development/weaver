@@ -1,10 +1,10 @@
 "use client"
 
 import * as React from "react"
-import { cn } from "@protoloom/ui/lib/utils"
+import { cn } from "@weaver/ui/lib/utils"
 import { AlertDialog as AlertDialogPrimitive } from "radix-ui"
 
-import { Button } from "@protoloom/ui/components/button"
+import { Button } from "@weaver/ui/components/button"
 
 function AlertDialog({
   ...props

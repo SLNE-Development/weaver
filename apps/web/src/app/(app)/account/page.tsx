@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
-import { Avatar, AvatarFallback, AvatarImage } from "@protoloom/ui/components/avatar";
-import { Badge } from "@protoloom/ui/components/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@protoloom/ui/components/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@weaver/ui/components/avatar";
+import { Badge } from "@weaver/ui/components/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@weaver/ui/components/card";
 import { getEnabledSocialProviders } from "@/server/auth";
 import { getServerContext } from "@/server/context";
 import { requireRole } from "@/server/session";

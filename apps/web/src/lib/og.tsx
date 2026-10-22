@@ -17,10 +17,10 @@ export const OG_COLORS = {
 } as const;
 
 /**
- * The inverted Protoloom icon (white tile, black threads), identical to
- * packages/ui/src/assets/protoloom-icon-inverted.svg (a test keeps them in sync).
+ * The inverted Weaver icon (white tile, black threads), identical to
+ * packages/ui/src/assets/weaver-icon-inverted.svg (a test keeps them in sync).
  */
-export const LOGO_INVERTED_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Protoloom">
+export const LOGO_INVERTED_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Weaver">
   <rect width="64" height="64" rx="16" fill="#ffffff"/>
   <path d="M20 13V51M32 13V51M44 13V51M13 20H51M13 32H51M13 44H51" fill="none" stroke="#000000" stroke-width="6" stroke-linecap="round"/>
   <path d="M20 14.25V25.75M14.25 32H25.75M20 38.25V49.75M26.25 20H37.75M32 26.25V37.75M26.25 44H37.75M44 14.25V25.75M38.25 32H49.75M44 38.25V49.75" fill="none" stroke="#ffffff" stroke-width="10.5"/>
@@ -113,7 +113,7 @@ export function OgCard({ eyebrow, title, subtitle, subtitleMono, footer, badge, 
     >
       <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
         <img src={LOGO_DATA_URI} width={72} height={72} alt="" />
-        <div style={{ display: "flex", fontSize: 34, fontWeight: 600, letterSpacing: "-0.02em" }}>Protoloom</div>
+        <div style={{ display: "flex", fontSize: 34, fontWeight: 600, letterSpacing: "-0.02em" }}>Weaver</div>
       </div>
 
       <div
@@ -208,7 +208,7 @@ export function OgCard({ eyebrow, title, subtitle, subtitleMono, footer, badge, 
           {footer}
         </div>
         <div style={{ display: "flex", gap: 28 }}>
-          {(meta ?? ["Self-hosted .proto registry"]).map((item) => (
+          {(meta ?? ["Maven · npm · Docker · proto"]).map((item) => (
             <div key={item} style={{ display: "flex", color: meta ? OG_COLORS.text : OG_COLORS.muted }}>
               {item}
             </div>

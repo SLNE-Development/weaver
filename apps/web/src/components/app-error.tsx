@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { TriangleAlertIcon } from "lucide-react";
-import { Button } from "@protoloom/ui/components/button";
+import { Button } from "@weaver/ui/components/button";
 import { StatusPage } from "./status-page";
 
 /** Error boundary content of the app pages: what went wrong (digest only), retry and a way out. */

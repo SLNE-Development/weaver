@@ -1,4 +1,4 @@
-import { getSettings } from "@protoloom/core";
+import { getSettings } from "@weaver/core";
 import { getPublicStats, type PublicStats } from "@/lib/public-catalog";
 import { getServerContext } from "@/server/context";
 
@@ -15,13 +15,13 @@ export interface LandingData {
  * isn't reachable: it then renders as for an anonymous visitor with anonymous view off.
  */
 export async function loadLandingData(requestHeaders: Headers): Promise<LandingData> {
-  const { auth, db } = getServerContext();
+  const { auth, db, stores } = getServerContext();
   const [session, settings] = await Promise.all([
     auth.api.getSession({ headers: requestHeaders }).catch((error: unknown) => {
       console.error("landing: could not read the session", error);
       return null;
     }),
-    getSettings(db).catch((error: unknown) => {
+    getSettings(db, { primaryStore: stores.primary.id, configuredStores: stores.configured() }).catch((error: unknown) => {
       console.error("landing: could not read settings", error);
       return { anonymousView: false };
     }),

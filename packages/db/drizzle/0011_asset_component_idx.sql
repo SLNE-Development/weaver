@@ -1,0 +1,1 @@
+CREATE INDEX "asset_component_idx" ON "asset" USING btree ("component_id");

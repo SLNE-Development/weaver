@@ -14,13 +14,13 @@ describe("decideAccess", () => {
   });
 
   it("lets anonymous visitors see the dashboard and browse pages when anonymous view is on", () => {
-    for (const path of ["/dashboard", "/browse", "/browse/main/dev.example/demo/1.0.0"]) {
+    for (const path of ["/dashboard", "/browse", "/browse/main/dev.example/demo/1.0.0", "/search?q=lib"]) {
       expect(decideAccess({ path, role: null, anonymousView: true })).toEqual({ kind: "allow" });
     }
   });
 
   it("keeps everything else behind the login even with anonymous view on", () => {
-    for (const path of ["/keys", "/repositories", "/account", "/admin/users", "/browsers", "/dashboards"]) {
+    for (const path of ["/keys", "/repositories", "/account", "/admin/users", "/browsers", "/dashboards", "/searches"]) {
       expect(decideAccess({ path, role: null, anonymousView: true })).toEqual({
         kind: "redirect",
         to: loginPath(path),

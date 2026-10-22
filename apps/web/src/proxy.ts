@@ -4,7 +4,7 @@ import { env } from "./env";
 import { PATH_HEADER } from "./lib/access";
 
 /** Sections that are never visible without signing in, whatever the anonymous-view setting says. */
-const SIGNED_IN_ONLY = ["/account", "/keys", "/repositories", "/admin"];
+const SIGNED_IN_ONLY = ["/account", "/keys", "/repositories", "/admin", "/cli-login"];
 
 /**
  * Runs before every page request. It only checks whether a session cookie is present (it never
@@ -28,7 +28,7 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // Pages only: skip the API, Next.js internals and root metadata files. Page paths may contain
+  // Pages only: skip the API, the protocol mounts, Next.js internals and root metadata files. Page paths may contain
   // dots (groups, versions), so static files can't be told apart by extension.
-  matcher: ["/((?!api/|_next/|favicon\\.ico$|robots\\.txt$|sitemap\\.xml$).*)"],
+  matcher: ["/((?!api/|_next/|favicon\\.ico$|robots\\.txt$|sitemap\\.xml$|v2/|v2$|maven/|npm/).*)"],
 };

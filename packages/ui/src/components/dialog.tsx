@@ -1,11 +1,11 @@
 "use client"
 
 import * as React from "react"
-import { cn } from "@protoloom/ui/lib/utils"
+import { cn } from "@weaver/ui/lib/utils"
 import { XIcon } from "lucide-react"
 import { Dialog as DialogPrimitive } from "radix-ui"
 
-import { Button } from "@protoloom/ui/components/button"
+import { Button } from "@weaver/ui/components/button"
 
 function Dialog({
   ...props

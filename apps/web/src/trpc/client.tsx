@@ -12,7 +12,7 @@ export type { RouterInputs, RouterOutputs } from "@/server/trpc/root";
 
 /**
  * `useTRPC()` returns the typed options proxy for TanStack Query, for example
- * `useQuery(trpc.browse.search.queryOptions({ query }))` or
+ * `useQuery(trpc.search.query.queryOptions({ q }))` or
  * `useMutation(trpc.keys.create.mutationOptions())`.
  */
 export const { TRPCProvider, useTRPC, useTRPCClient } = createTRPCContext<AppRouter>();

@@ -2,7 +2,7 @@ import { existsSync } from "node:fs";
 import { mkdir, readdir, readFile, realpath, rename, rm, stat, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
-import { extractArchive, sha256, type ProtoFile } from "@protoloom/core/archive";
+import { extractArchive, sha256, type ProtoFile } from "@weaver/core/archive";
 import { RegistryClient, type ResolveConflict } from "./client.js";
 import { CliError } from "./config.js";
 
@@ -30,11 +30,11 @@ export interface FetchResult {
   files: number;
 }
 
-/** `node_modules/.cache/protoloom` when a node_modules folder exists in `cwd`, else `~/.cache/protoloom`. */
+/** `node_modules/.cache/weaver` when a node_modules folder exists in `cwd`, else `~/.cache/weaver`. */
 export function defaultCacheDir(cwd: string): string {
   return existsSync(join(cwd, "node_modules"))
-    ? join(cwd, "node_modules", ".cache", "protoloom")
-    : join(homedir(), ".cache", "protoloom");
+    ? join(cwd, "node_modules", ".cache", "weaver")
+    : join(homedir(), ".cache", "weaver");
 }
 
 const hasIllegalChar = (segment: string): boolean =>
@@ -99,8 +99,8 @@ async function writeAtomic(path: string, data: Buffer): Promise<void> {
   await rename(tmp, path);
 }
 
-/** Name of the file that marks a directory as created (and replaceable) by protoloom. */
-export const OUTPUT_MARKER = ".protoloom-output";
+/** Name of the file that marks a directory as created (and replaceable) by weaver. */
+export const OUTPUT_MARKER = ".weaver-output";
 
 /** Resolves symlinks of the deepest existing ancestor and re-appends the not-yet-existing rest. */
 async function realResolve(path: string): Promise<string> {
@@ -129,7 +129,7 @@ function contains(parent: string, child: string): boolean {
 /**
  * Guards the directory that is about to be deleted and replaced: it must not be
  * (or contain) the working directory, config file, cache or node_modules, and an
- * existing non-empty directory must carry protoloom's marker file.
+ * existing non-empty directory must carry weaver's marker file.
  */
 async function assertSafeOutDir(outDir: string, opts: FetchOptions, cwd: string): Promise<void> {
   const real = await realResolve(outDir);
@@ -154,7 +154,7 @@ async function assertSafeOutDir(outDir: string, opts: FetchOptions, cwd: string)
   }
   if (entries.length > 0 && !entries.includes(OUTPUT_MARKER)) {
     throw new CliError(
-      `${outDir} exists and wasn't created by protoloom; remove it or choose another outDir`,
+      `${outDir} exists and wasn't created by weaver; remove it or choose another outDir`,
     );
   }
 }
@@ -226,7 +226,7 @@ export async function fetchProtos(opts: FetchOptions): Promise<FetchResult> {
   await rm(tmpDir, { recursive: true, force: true });
   await mkdir(tmpDir, { recursive: true });
   try {
-    await writeFile(join(tmpDir, OUTPUT_MARKER), "Managed by protoloom; this directory is replaced on every fetch.\n");
+    await writeFile(join(tmpDir, OUTPUT_MARKER), "Managed by weaver; this directory is replaced on every fetch.\n");
     for (const { file } of placed) {
       const target = join(tmpDir, ...file.path.split("/"));
       await mkdir(dirname(target), { recursive: true });

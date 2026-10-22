@@ -1,0 +1,318 @@
+{
+  "repos": [
+    {
+      "name": "proto-hosted",
+      "format": "proto",
+      "kind": "hosted",
+      "visibility": "private"
+    },
+    {
+      "name": "proto-public",
+      "format": "proto",
+      "kind": "hosted",
+      "visibility": "public"
+    },
+    {
+      "name": "proto-mirror",
+      "format": "proto",
+      "kind": "mirror",
+      "visibility": "private",
+      "config": {
+        "cache": {
+          "enabled": false
+        }
+      },
+      "upstreams": [
+        {
+          "url": "http://upstream:3000/api/v1/repos/proto-upstream",
+          "authType": "bearer",
+          "secretEnv": "UPSTREAM_PROTO_TOKEN"
+        }
+      ]
+    },
+    {
+      "name": "proto-cached",
+      "format": "proto",
+      "kind": "mirror",
+      "visibility": "private",
+      "config": {
+        "cache": {
+          "enabled": true,
+          "store": "s3"
+        }
+      },
+      "upstreams": [
+        {
+          "url": "http://upstream:3000/api/v1/repos/proto-upstream",
+          "authType": "bearer",
+          "secretEnv": "UPSTREAM_PROTO_TOKEN"
+        }
+      ]
+    },
+    {
+      "name": "proto-group",
+      "format": "proto",
+      "kind": "group",
+      "visibility": "private",
+      "members": [
+        "proto-hosted",
+        "proto-mirror"
+      ]
+    },
+    {
+      "name": "maven-hosted",
+      "format": "maven",
+      "kind": "hosted",
+      "visibility": "private"
+    },
+    {
+      "name": "maven-public",
+      "format": "maven",
+      "kind": "hosted",
+      "visibility": "public"
+    },
+    {
+      "name": "maven-mirror",
+      "format": "maven",
+      "kind": "mirror",
+      "visibility": "private",
+      "config": {
+        "cache": {
+          "enabled": false
+        }
+      },
+      "upstreams": [
+        {
+          "url": "http://reposilite:8080/releases",
+          "authType": "basic",
+          "username": "e2e",
+          "secret": "e2e-reposilite-secret"
+        }
+      ]
+    },
+    {
+      "name": "maven-cached",
+      "format": "maven",
+      "kind": "mirror",
+      "visibility": "private",
+      "config": {
+        "cache": {
+          "enabled": true,
+          "store": "s3"
+        }
+      },
+      "upstreams": [
+        {
+          "url": "http://reposilite:8080/releases",
+          "authType": "basic",
+          "username": "e2e",
+          "secret": "e2e-reposilite-secret"
+        }
+      ]
+    },
+    {
+      "name": "maven-group",
+      "format": "maven",
+      "kind": "group",
+      "visibility": "private",
+      "members": [
+        "maven-hosted",
+        "maven-mirror"
+      ]
+    },
+    {
+      "name": "npm-hosted",
+      "format": "npm",
+      "kind": "hosted",
+      "visibility": "private"
+    },
+    {
+      "name": "npm-public",
+      "format": "npm",
+      "kind": "hosted",
+      "visibility": "public"
+    },
+    {
+      "name": "npm-mirror",
+      "format": "npm",
+      "kind": "mirror",
+      "visibility": "private",
+      "config": {
+        "cache": {
+          "enabled": false
+        }
+      },
+      "upstreams": [
+        {
+          "url": "http://verdaccio:4873/",
+          "authType": "none"
+        }
+      ]
+    },
+    {
+      "name": "npm-cached",
+      "format": "npm",
+      "kind": "mirror",
+      "visibility": "private",
+      "config": {
+        "cache": {
+          "enabled": true,
+          "store": "s3"
+        }
+      },
+      "upstreams": [
+        {
+          "url": "http://verdaccio:4873/",
+          "authType": "none"
+        }
+      ]
+    },
+    {
+      "name": "npm-group",
+      "format": "npm",
+      "kind": "group",
+      "visibility": "private",
+      "members": [
+        "npm-hosted",
+        "npm-mirror"
+      ]
+    },
+    {
+      "name": "docker-hosted",
+      "format": "docker",
+      "kind": "hosted",
+      "visibility": "private"
+    },
+    {
+      "name": "docker-public",
+      "format": "docker",
+      "kind": "hosted",
+      "visibility": "public"
+    },
+    {
+      "name": "docker-mirror",
+      "format": "docker",
+      "kind": "mirror",
+      "visibility": "private",
+      "config": {
+        "cache": {
+          "enabled": false
+        }
+      },
+      "upstreams": [
+        {
+          "url": "http://registry:5000",
+          "authType": "basic",
+          "username": "e2e",
+          "secret": "e2e-registry-pass"
+        }
+      ]
+    },
+    {
+      "name": "docker-cached",
+      "format": "docker",
+      "kind": "mirror",
+      "visibility": "private",
+      "config": {
+        "cache": {
+          "enabled": true,
+          "store": "s3"
+        }
+      },
+      "upstreams": [
+        {
+          "url": "http://registry:5000",
+          "authType": "basic",
+          "username": "e2e",
+          "secret": "e2e-registry-pass"
+        }
+      ]
+    },
+    {
+      "name": "docker-group",
+      "format": "docker",
+      "kind": "group",
+      "visibility": "private",
+      "members": [
+        "docker-hosted",
+        "docker-mirror"
+      ]
+    },
+    {
+      "name": "hub",
+      "format": "docker",
+      "kind": "mirror",
+      "visibility": "public",
+      "dockerRoot": true,
+      "config": {
+        "cache": {
+          "enabled": true,
+          "store": "s3"
+        }
+      },
+      "upstreams": [
+        {
+          "url": "http://registry:5000",
+          "authType": "basic",
+          "username": "e2e",
+          "secret": "e2e-registry-pass"
+        }
+      ]
+    }
+  ],
+  "tokens": {
+    "write": [
+      { "repository": "proto-hosted", "access": "write" },
+      { "repository": "proto-public", "access": "write" },
+      { "repository": "proto-mirror", "access": "read" },
+      { "repository": "proto-cached", "access": "read" },
+      { "repository": "proto-group", "access": "read" },
+      { "repository": "maven-hosted", "access": "write" },
+      { "repository": "maven-public", "access": "write" },
+      { "repository": "maven-mirror", "access": "read" },
+      { "repository": "maven-cached", "access": "read" },
+      { "repository": "maven-group", "access": "read" },
+      { "repository": "npm-hosted", "access": "write" },
+      { "repository": "npm-public", "access": "write" },
+      { "repository": "npm-mirror", "access": "read" },
+      { "repository": "npm-cached", "access": "read" },
+      { "repository": "npm-group", "access": "read" },
+      { "repository": "docker-hosted", "access": "write" },
+      { "repository": "docker-public", "access": "write" },
+      { "repository": "docker-mirror", "access": "read" },
+      { "repository": "docker-cached", "access": "read" },
+      { "repository": "docker-group", "access": "read" },
+      { "repository": "hub", "access": "read" }
+    ],
+    "read": [
+      { "repository": "proto-hosted", "access": "read" },
+      { "repository": "proto-public", "access": "read" },
+      { "repository": "proto-mirror", "access": "read" },
+      { "repository": "proto-cached", "access": "read" },
+      { "repository": "proto-group", "access": "read" },
+      { "repository": "maven-hosted", "access": "read" },
+      { "repository": "maven-public", "access": "read" },
+      { "repository": "maven-mirror", "access": "read" },
+      { "repository": "maven-cached", "access": "read" },
+      { "repository": "maven-group", "access": "read" },
+      { "repository": "npm-hosted", "access": "read" },
+      { "repository": "npm-public", "access": "read" },
+      { "repository": "npm-mirror", "access": "read" },
+      { "repository": "npm-cached", "access": "read" },
+      { "repository": "npm-group", "access": "read" },
+      { "repository": "docker-hosted", "access": "read" },
+      { "repository": "docker-public", "access": "read" },
+      { "repository": "docker-mirror", "access": "read" },
+      { "repository": "docker-cached", "access": "read" },
+      { "repository": "docker-group", "access": "read" },
+      { "repository": "hub", "access": "read" }
+    ],
+    "group": [
+      { "repository": "proto-group", "access": "read" },
+      { "repository": "maven-group", "access": "read" },
+      { "repository": "npm-group", "access": "read" },
+      { "repository": "docker-group", "access": "read" }
+    ],
+    "none": []
+  }
+}

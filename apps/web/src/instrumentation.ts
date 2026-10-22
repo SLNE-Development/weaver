@@ -5,6 +5,6 @@
  */
 export async function register(): Promise<void> {
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
-  const [{ migrate }, { getServerContext }] = await Promise.all([import("@protoloom/db"), import("./server/context")]);
+  const [{ migrate }, { getServerContext }] = await Promise.all([import("@weaver/db"), import("./server/context")]);
   await migrate(getServerContext().db);
 }

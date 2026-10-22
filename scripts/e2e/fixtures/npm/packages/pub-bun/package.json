@@ -1,0 +1,7 @@
+{
+  "name": "@e2e/pub-bun",
+  "version": "1.0.0",
+  "description": "Published by the bun client.",
+  "main": "index.js",
+  "license": "MIT"
+}
