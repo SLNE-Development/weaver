@@ -20,7 +20,7 @@
     "@weaver/maven": "workspace:*",
     "@weaver/npm": "workspace:*",
     "@t3-oss/env-core": "0.13.11",
-    "bullmq": "6.3.19",
+    "bullmq": "6.4.0",
     "ioredis": "6.0.0",
     "zod": "4.6.7"
   },
