@@ -8,7 +8,7 @@ import { UsageSnippet } from "@/components/usage-snippet";
 import { artifactHref, listingMetadataInput, repositoryHref } from "@/lib/browse";
 import { pageMetadata } from "@/lib/seo";
 import { visibleRepository } from "@/server/browse-metadata";
-import { orNotFound } from "@/server/page-data";
+import { orNotFound, redirectToGroupMember } from "@/server/page-data";
 import { requirePageAccess } from "@/server/session";
 import { api } from "@/trpc/server";
 
@@ -25,7 +25,13 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 export default async function ArtifactPage({ params }: { params: Promise<Params> }) {
   const { repo, group, name } = await params;
   await requirePageAccess(artifactHref(repo, group, name));
-  const versions = await orNotFound(api.browse.versions({ repository: repo, group, name }), artifactHref(repo, group, name));
+  const versions = await orNotFound(
+    api.browse.versions({ repository: repo, group, name }).catch(async (error: unknown) => {
+      await redirectToGroupMember(repo, group, name);
+      throw error;
+    }),
+    artifactHref(repo, group, name),
+  );
   const latest = versions[0];
   const latestRelease = versions.find((v) => !v.isSnapshot);
   const usageVersion = latestRelease ?? latest;

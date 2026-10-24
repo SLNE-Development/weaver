@@ -16,7 +16,7 @@ import { VersionActions } from "@/components/version-actions";
 import { env } from "@/env";
 import { archiveHref, artifactHref, artifactMetadataInput, buildFileTree, firstFile, formatBytes, formatTimestamp, gradleSnippet, repositoryHref } from "@/lib/browse";
 import { pageMetadata } from "@/lib/seo";
-import { orNotFound } from "@/server/page-data";
+import { orNotFound, redirectToGroupMember } from "@/server/page-data";
 import { requirePageAccess } from "@/server/session";
 import { api } from "@/trpc/server";
 
@@ -99,7 +99,13 @@ export default async function VersionPage({
   const path = artifactHref(repo, group, name, version);
   const { user } = await requirePageAccess(path);
   const coordinate = `${group}:${name}:${version}`;
-  const info = await orNotFound(loadVersion(repo, coordinate), path);
+  const info = await orNotFound(
+    loadVersion(repo, coordinate).catch(async (error: unknown) => {
+      await redirectToGroupMember(repo, group, name, version);
+      throw error;
+    }),
+    path,
+  );
 
   const tree = buildFileTree(info.files);
   const requested = Array.isArray(query.file) ? query.file[0] : query.file;

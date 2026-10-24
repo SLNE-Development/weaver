@@ -1,3 +1,4 @@
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import type { Kind } from "@weaver/core";
 import { getManifestDetail, listImageTags, listImages, type ImageSummary, type ManifestDetail, type TagRow } from "@weaver/docker/browse";
@@ -39,6 +40,26 @@ export const dockerRouter = router({
       const row = await requireBrowsableRepository(ctx.db, ctx.principal, input.repo, { format: "docker" });
       if (row.kind === "group") return { items: [], next: null };
       return listImages(ctx.db, row.id, { query: input.query || undefined, cursor: input.cursor, limit: DOCKER_IMAGES_PAGE });
+    }),
+
+  /**
+   * The member of a docker group (`BAD_REQUEST` for other repositories) that stores an image, or one manifest of
+   * it: the first in group order that the caller may browse. Null when none does. Lets a group URL forward to it.
+   */
+  groupMember: browseProcedure
+    .input(z.object({ repo: repositoryName, image: imageName, digest: digest.optional() }))
+    .query(async ({ ctx, input }): Promise<string | null> => {
+      const row = await requireBrowsableRepository(ctx.db, ctx.principal, input.repo, { format: "docker" });
+      if (row.kind !== "group") throw new TRPCError({ code: "BAD_REQUEST", message: `Repository ${row.name} is not a group` });
+      for (const member of await ctx.repos.members(row.id)) {
+        if (!canBrowseRepository(ctx.principal, member)) continue;
+        const stored =
+          input.digest === undefined
+            ? (await listImageTags(ctx.db, member.id, input.image)).length > 0
+            : (await getManifestDetail(ctx.db, member.id, input.image, input.digest)) !== null;
+        if (stored) return member.name;
+      }
+      return null;
     }),
 
   /** The tags of one image, most recently moved first. */

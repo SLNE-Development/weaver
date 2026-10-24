@@ -337,6 +337,40 @@ export const browseRouter = router({
    * The members of a proto group (`BAD_REQUEST` for other repositories) in the order the group
    * searches them, leaving out members the caller could not browse on their own.
    */
+  /**
+   * The member of a proto group (`BAD_REQUEST` for other repositories) whose browse page shows an
+   * artifact, or one version of it: the first hosted member in group order that the caller may browse
+   * and that has it. Null when none does. Lets a group URL forward to the member that serves it.
+   */
+  protoGroupMember: browseProcedure
+    .input(
+      z.object({
+        repository: repositoryName,
+        group: z.string().refine(isValidGroup, "Invalid group"),
+        name: z.string().refine(isValidName, "Invalid artifact name"),
+        version: z.string().min(1).max(200).optional(),
+      }),
+    )
+    .query(async ({ ctx, input }): Promise<string | null> => {
+      const repo = await requireBrowsableRepository(ctx.db, ctx.principal, input.repository, { format: "proto" });
+      requireKind(repo, "group");
+      for (const member of await ctx.repos.members(repo.id)) {
+        if (member.kind !== "hosted" || !canBrowseRepository(ctx.principal, member) || !canReadGroup(ctx.principal, member, input.group)) continue;
+        const where = and(eq(protoArtifact.repositoryId, member.id), eq(protoArtifact.group, input.group), eq(protoArtifact.name, input.name));
+        const [hit] =
+          input.version === undefined
+            ? await ctx.db.select({ id: protoArtifact.id }).from(protoArtifact).where(where).limit(1)
+            : await ctx.db
+                .select({ id: protoVersion.id })
+                .from(protoVersion)
+                .innerJoin(protoArtifact, eq(protoArtifact.id, protoVersion.artifactId))
+                .where(and(where, eq(protoVersion.version, input.version)))
+                .limit(1);
+        if (hit) return member.name;
+      }
+      return null;
+    }),
+
   protoMembers: browseProcedure.input(z.object({ repository: repositoryName })).query(async ({ ctx, input }): Promise<ProtoMember[]> => {
     const repo = await requireBrowsableRepository(ctx.db, ctx.principal, input.repository, { format: "proto" });
     requireKind(repo, "group");

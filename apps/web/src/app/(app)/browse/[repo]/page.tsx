@@ -9,7 +9,7 @@ import { listingMetadataInput, repositoryHref } from "@/lib/browse";
 import { formatLabel } from "@/lib/repository-settings";
 import { pageMetadata } from "@/lib/seo";
 import { visibleRepository } from "@/server/browse-metadata";
-import { orNotFound } from "@/server/page-data";
+import { orNotFound, redirectToDockerGroupMember } from "@/server/page-data";
 import { requirePageAccess } from "@/server/session";
 import { api } from "@/trpc/server";
 import { FormatBadge, KindLabel } from "../../repositories/_components/format-badge";
@@ -24,10 +24,21 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 }
 
 /** One repository: a common header, then the browse view of its format (`BROWSE_VIEWS`), or "not available yet". */
-export default async function RepositoryPage({ params }: { params: Promise<Params> }) {
-  const { repo: name } = await params;
+export default async function RepositoryPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<Params>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const [{ repo: name }, query] = await Promise.all([params, searchParams]);
   await requirePageAccess(repositoryHref(name));
   const repo = await orNotFound(api.browse.repository({ name }), repositoryHref(name));
+  // A docker group lists no images: an image link forwards to the member that stores it.
+  const image = typeof query.image === "string" ? query.image.trim() : "";
+  if (repo.format === "docker" && repo.kind === "group" && image) {
+    await redirectToDockerGroupMember(repo.name, image, typeof query.digest === "string" ? query.digest.trim() || undefined : undefined);
+  }
   const View = BROWSE_VIEWS[repo.format];
 
   return (

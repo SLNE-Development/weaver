@@ -731,6 +731,28 @@ describe("proto browse by kind", () => {
     expect(await codeOf(call(viewer()).browse.protoMembers({ repository: "shared" }))).toBe("BAD_REQUEST");
   });
 
+  it("protoGroupMember finds the first browsable hosted member with the artifact", async () => {
+    await publish("internal", "acme:money:1.0.0", moneyFiles);
+    await publish("shared", "acme:money:1.0.0", moneyFiles);
+    await publish("shared", "acme:money:1.1.0", moneyFiles);
+    await createMirror(false);
+    await call(admin()).repositories.create({
+      name: "all",
+      format: "proto",
+      kind: "group",
+      visibility: "public",
+      members: ["upstream-protos", "internal", "shared"],
+    });
+    const viewerCall = call(viewer());
+    expect(await viewerCall.browse.protoGroupMember({ repository: "all", group: "acme", name: "money" })).toBe("internal");
+    expect(await viewerCall.browse.protoGroupMember({ repository: "all", group: "acme", name: "money", version: "1.1.0" })).toBe("shared");
+    expect(await viewerCall.browse.protoGroupMember({ repository: "all", group: "acme", name: "money", version: "9.9.9" })).toBeNull();
+    expect(await viewerCall.browse.protoGroupMember({ repository: "all", group: "acme", name: "nope" })).toBeNull();
+    // Anonymous visitors skip the private member.
+    expect(await call(anonymous, anonymousViewOn).browse.protoGroupMember({ repository: "all", group: "acme", name: "money" })).toBe("shared");
+    expect(await codeOf(viewerCall.browse.protoGroupMember({ repository: "shared", group: "acme", name: "money" }))).toBe("BAD_REQUEST");
+  });
+
   it("browse.versions on a proto mirror is NOT_FOUND", async () => {
     await createMirror(true);
     await call(admin()).repositories.create({ name: "all", format: "proto", kind: "group", members: ["shared"] });
@@ -920,6 +942,18 @@ describe("docker", () => {
     expect(await call(viewer()).docker.manifest({ repo: "images", image: "web", digest: `sha256:${"0".repeat(64)}` })).toBeNull();
     await storeImage("pubimages", "open", "latest");
     expect((await call(anonymous, anonymousViewOn).docker.images({ repo: "pubimages" })).items).toHaveLength(1);
+  });
+
+  it("groupMember finds the first browsable member that stores an image or manifest", async () => {
+    await storeImage("images", "web", "latest");
+    const pubDigest = await storeImage("pubimages", "web", "1.0");
+    await call(admin()).repositories.create({ name: "imggroup", format: "docker", kind: "group", visibility: "public", members: ["images", "pubimages"] });
+    expect(await call(viewer()).docker.groupMember({ repo: "imggroup", image: "web" })).toBe("images");
+    expect(await call(viewer()).docker.groupMember({ repo: "imggroup", image: "web", digest: pubDigest })).toBe("pubimages");
+    expect(await call(viewer()).docker.groupMember({ repo: "imggroup", image: "nope" })).toBeNull();
+    // Anonymous visitors skip the private member.
+    expect(await call(anonymous, anonymousViewOn).docker.groupMember({ repo: "imggroup", image: "web" })).toBe("pubimages");
+    expect(await codeOf(call(viewer()).docker.groupMember({ repo: "images", image: "web" }))).toBe("BAD_REQUEST");
   });
 
   it("overview lists browsable group members and exposes no mirror config", async () => {
