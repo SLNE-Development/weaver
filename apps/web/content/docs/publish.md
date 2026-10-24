@@ -48,7 +48,7 @@ Then apply and configure it:
 
 ```kotlin title="build.gradle.kts"
 plugins {
-    id("dev.slne.weaver") version "0.2.0"
+    id("dev.slne.weaver") version "0.3.0"
 }
 
 version = "1.0.0"

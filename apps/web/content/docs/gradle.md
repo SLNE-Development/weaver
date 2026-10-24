@@ -22,7 +22,7 @@ pluginManagement {
 
 ```kotlin title="build.gradle.kts"
 plugins {
-    id("dev.slne.weaver") version "0.2.0"
+    id("dev.slne.weaver") version "0.3.0"
 }
 ```
 

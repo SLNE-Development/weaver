@@ -45,7 +45,7 @@ docker compose -f docker-compose.prod.yml up -d
 
 `docker-compose.prod.yml` runs the published image `ghcr.io/slne-development/weaver:latest` as the web app and
 as the worker, with PostgreSQL and Valkey. Set `WEAVER_IMAGE` to pin a release (for example
-`ghcr.io/slne-development/weaver:0.2.0`), or run `up -d --build` to build from the checkout. Put a TLS-terminating
+`ghcr.io/slne-development/weaver:0.3.0`), or run `up -d --build` to build from the checkout. Put a TLS-terminating
 reverse proxy in front of port 3000 that does not limit request bodies (nginx: `client_max_body_size 0;` and
 `proxy_request_buffering off;`), and set `BETTER_AUTH_URL` to its https URL.
 
@@ -137,7 +137,7 @@ pluginManagement {
 ```kotlin
 // build.gradle.kts
 plugins {
-    id("dev.slne.weaver") version "0.2.0"
+    id("dev.slne.weaver") version "0.3.0"
 }
 
 // WEAVER_URL and WEAVER_TOKEN are read from the environment by default.

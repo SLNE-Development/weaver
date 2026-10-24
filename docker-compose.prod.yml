@@ -4,7 +4,7 @@
 #   docker compose -f docker-compose.prod.yml pull     # released image ghcr.io/slne-development/weaver:latest
 #   docker compose -f docker-compose.prod.yml up -d    # or `up -d --build` to build it from this checkout
 #
-# WEAVER_IMAGE overrides the image (e.g. ghcr.io/slne-development/weaver:0.2.0 to pin a release).
+# WEAVER_IMAGE overrides the image (e.g. ghcr.io/slne-development/weaver:0.3.0 to pin a release).
 #
 # Client URLs, all on BETTER_AUTH_URL (put an https reverse proxy in front, see the docs: /docs/self-host/compose):
 #   Maven   ${BETTER_AUTH_URL}/maven/<repo>/

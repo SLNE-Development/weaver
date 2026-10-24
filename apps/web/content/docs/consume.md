@@ -25,7 +25,7 @@ Apply the plugin (see [Publish your first artifact](/docs/publish#apply-the-plug
 
 ```kotlin title="build.gradle.kts"
 plugins {
-    id("dev.slne.weaver") version "0.2.0"
+    id("dev.slne.weaver") version "0.3.0"
 }
 
 weaver {

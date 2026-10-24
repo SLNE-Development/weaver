@@ -32,7 +32,7 @@
 # SERVICE_FQDN_* only routes traffic; the application never reads it.
 #
 # Image: weaver and worker pull the published ghcr.io/slne-development/weaver:latest. Set
-#   WEAVER_IMAGE to pin a release (e.g. ghcr.io/slne-development/weaver:0.2.0). To build from
+#   WEAVER_IMAGE to pin a release (e.g. ghcr.io/slne-development/weaver:0.3.0). To build from
 #   source instead, add to both services:
 #     build:
 #       context: .

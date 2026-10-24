@@ -65,7 +65,7 @@ docker compose -f docker-compose.prod.yml pull
 docker compose -f docker-compose.prod.yml up -d
 ```
 
-This runs the published image `ghcr.io/slne-development/weaver:latest`. Set `WEAVER_IMAGE` in `.env` to pin a release, for example `WEAVER_IMAGE=ghcr.io/slne-development/weaver:0.2.0`, so upgrades happen only when you choose. To build the image from the checked-out source instead, run `docker compose -f docker-compose.prod.yml up -d --build`.
+This runs the published image `ghcr.io/slne-development/weaver:latest`. Set `WEAVER_IMAGE` in `.env` to pin a release, for example `WEAVER_IMAGE=ghcr.io/slne-development/weaver:0.3.0`, so upgrades happen only when you choose. To build the image from the checked-out source instead, run `docker compose -f docker-compose.prod.yml up -d --build`.
 
 The app is healthy once `GET /api/health` answers. Check with:
 
