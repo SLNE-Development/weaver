@@ -29,6 +29,6 @@
     "@weaver/core": "workspace:*",
     "@weaver/db": "workspace:*",
     "drizzle-orm": "0.45.4",
-    "fast-xml-parser": "5.11.1"
+    "fast-xml-parser": "5.11.2"
   }
 }
