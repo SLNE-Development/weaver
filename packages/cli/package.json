@@ -25,7 +25,7 @@
   "devDependencies": {
     "@weaver/config": "workspace:*",
     "@weaver/core": "workspace:*",
-    "@types/node": "26.6.5",
+    "@types/node": "26.6.6",
     "eslint": "10.13.0",
     "tsup": "9.0.0",
     "typescript": "6.0.3",
