@@ -23,7 +23,7 @@
   "devDependencies": {
     "@weaver/config": "workspace:*",
     "@testcontainers/postgresql": "12.2.1",
-    "@types/node": "26.6.5",
+    "@types/node": "26.6.6",
     "@types/pg": "8.23.1",
     "drizzle-kit": "0.31.11",
     "eslint": "10.13.0",
