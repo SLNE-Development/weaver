@@ -21,7 +21,7 @@
     "@types/node": "26.6.5",
     "@weaver/config": "workspace:*",
     "drizzle-orm": "0.45.4",
-    "eslint": "10.13.0",
+    "eslint": "10.14.0",
     "testcontainers": "12.2.1",
     "typescript": "6.0.3",
     "vitest": "5.0.5"
