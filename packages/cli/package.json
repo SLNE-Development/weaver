@@ -26,7 +26,7 @@
     "@weaver/config": "workspace:*",
     "@weaver/core": "workspace:*",
     "@types/node": "26.6.5",
-    "eslint": "10.13.0",
+    "eslint": "10.14.0",
     "tsup": "9.0.0",
     "typescript": "6.0.3",
     "vitest": "5.0.5",
