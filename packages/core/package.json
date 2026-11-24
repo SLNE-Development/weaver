@@ -34,7 +34,7 @@
     "@weaver/config": "workspace:*",
     "eslint": "10.13.0",
     "testcontainers": "12.2.1",
-    "typescript": "6.0.3",
+    "typescript": "7.0.2",
     "vitest": "5.0.5"
   },
   "dependencies": {
