@@ -19,11 +19,11 @@
   },
   "devDependencies": {
     "@weaver/config": "workspace:*",
-    "@testcontainers/postgresql": "12.2.1",
-    "@types/node": "26.6.5",
+    "@testcontainers/postgresql": "12.2.2",
+    "@types/node": "26.6.6",
     "eslint": "10.13.0",
     "typescript": "7.0.2",
-    "vitest": "5.0.5"
+    "vitest": "5.1.1"
   },
   "dependencies": {
     "@weaver/core": "workspace:*",
